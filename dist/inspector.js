@@ -1082,12 +1082,28 @@
           rect.width-bo.l-bo.r-pa.l-pa.r, rect.height-bo.t-bo.b-pa.t-pa.b, 'content');
         makeDimLabel(rect.left, rect.top - 22,
           `${Math.round(rect.width)} × ${parseFloat(rect.height).toFixed(1)}`);
-        // #1, #2 — reposition panel relative to element after scroll/resize
-        positionPanel(rect);
+        // Panel stays in place during scroll — only overlays update
       });
     };
+    // Prevent panel's own scroll from triggering overlay recalculation.
+    // Must be registered BEFORE _onScrollResize so stopImmediatePropagation takes effect.
+    const panelScrollStop = (e) => {
+      const panel = document.getElementById(`${PREFIX}_panel`);
+      if (panel && panel.contains(e.target)) e.stopImmediatePropagation();
+    };
+    addListener(window, 'scroll', panelScrollStop, { capture: true });
+
+    // Page scroll: only update overlays, panel stays in place
     addListener(window, 'scroll', _onScrollResize, { passive: true, capture: true });
-    addListener(window, 'resize', _onScrollResize, { passive: true });
+
+    // Resize: update overlays AND reposition panel (viewport size changed)
+    addListener(window, 'resize', () => {
+      _onScrollResize();
+      if (!_pinned || !_enabled) return;
+      const panel = document.getElementById(`${PREFIX}_panel`);
+      if (!panel || panel.style.display !== 'flex') return;
+      positionPanel(_pinned.getBoundingClientRect());
+    }, { passive: true });
   }
 
   // ── CSS INJECTION ──

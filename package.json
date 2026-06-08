@@ -1,21 +1,28 @@
 {
     "name": "@armvs/dom-inspector",
-    "version": "1.1.0",
-    "description": "Lightweight DOM inspector for any project",
+    "version": "2.1.0",
+    "description": "Lightweight DOM inspector inspired by browser DevTools. Inspect elements, visualize box model, view selectors and debug layouts directly on any webpage.",
     "main": "dist/inspector.js",
+    "style": "dist/inspector.css",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "keywords": [
         "dom",
         "inspector",
-        "devtools"
+        "devtools",
+	"debug",
+	"layout",
+	"css",
+	"selector",
+	"html",
+	"developer-tools"
     ],
-    "author": "",
+    "author": "Sayat",
     "license": "MIT",
     "type": "commonjs",
-    "style": "dist/inspector.css",
     "files": [
+        "README.md",
         "dist/"
     ],
     "dependencies": {}
