@@ -1,4 +1,4 @@
-````md
+```md
 # @armvs/dom-inspector
 
 Lightweight, zero-dependency DOM inspector. Drop it into any project — works with plain HTML, Laravel Blade, Vue, React, or any framework.
