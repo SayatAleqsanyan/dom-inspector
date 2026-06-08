@@ -1,0 +1,22 @@
+{
+    "name": "@armvs/dom-inspector",
+    "version": "1.1.0",
+    "description": "Lightweight DOM inspector for any project",
+    "main": "dist/inspector.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+        "dom",
+        "inspector",
+        "devtools"
+    ],
+    "author": "",
+    "license": "MIT",
+    "type": "commonjs",
+    "style": "dist/inspector.css",
+    "files": [
+        "dist/"
+    ],
+    "dependencies": {}
+}
