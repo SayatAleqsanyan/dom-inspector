@@ -47,7 +47,7 @@
 #__insp_tabs_wrap{position:relative;flex-shrink:0;border-bottom:1px solid;}
 .insp-dark  #__insp_tabs_wrap{border-color:#45475a;}
 .insp-light #__insp_tabs_wrap{border-color:#d0cfe8;}
-#__insp_tabs{display:flex;overflow-x:auto;scrollbar-width:thin;scrollbar-color:#45475a transparent;}
+#__insp_tabs{display:flex;overflow-x:auto;scrollbar-width:thin;scrollbar-color:#45475a transparent;padding: 0 0 0 10px; }
 #__insp_tabs::-webkit-scrollbar{height:3px;}
 .insp-dark  #__insp_tabs::-webkit-scrollbar-thumb{background:#45475a;border-radius:2px;}
 .insp-light #__insp_tabs::-webkit-scrollbar-thumb{background:#c4b5fd;border-radius:2px;}
