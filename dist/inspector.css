@@ -1,16 +1,16 @@
 /* #10 — overlay layers: pointer-events none */
-.__insp_layer{position:fixed;pointer-events:none;z-index:2147483647;box-sizing:border-box;mix-blend-mode:multiply;}
+.__insp_layer{position:fixed;pointer-events:none;z-index:2147483644;box-sizing:border-box;mix-blend-mode:multiply;}
 .__insp_margin {background:rgba(255,155,0,.10);border:1.5px dashed rgba(255,155,0,.7);}
 .__insp_border {background:transparent;border:1.5px solid rgba(200,160,0,.8);}
 .__insp_padding{background:rgba(100,200,100,.10);border:1.5px solid rgba(60,160,60,.7);}
 .__insp_content{background:transparent;}
-.__insp_dim{position:fixed;pointer-events:none;z-index:2147483647;background:#6b21a8;color:#fff;font-size:11px;font-family:monospace;padding:2px 6px;border-radius:3px;white-space:nowrap;}
+.__insp_dim{position:fixed;pointer-events:none;z-index:2147483644;background:#6b21a8;color:#fff;font-size:11px;font-family:monospace;padding:2px 6px;border-radius:3px;white-space:nowrap;}
 .__insp_tooltip{position:fixed;pointer-events:none;z-index:2147483647;font-family:monospace;font-size:11px;background:#11111b;color:#cdd6f4;border:1px solid #45475a;border-radius:4px;padding:3px 8px;display:none;white-space:nowrap;}
 
 /* ── PANEL ── */
-/* #6 — z-index maximized; #10 — panel itself keeps pointer-events (interactive) */
+/* #6 — z-index: panel below layers so overlays never cover the panel */
 #__insp_panel{
-  position:fixed;z-index:2147483647;width:360px;
+  position:fixed;z-index:2147483646;width:360px;
   font-family:'SF Mono','Fira Code',monospace;font-size:12px;
   display:none;
   flex-direction:column;

@@ -1932,16 +1932,22 @@ td:first-child{color:#6c7086;width:40%}.sel{background:#252535;padding:6px 10px;
 
     // #2, #8 — scroll & resize: recalculate overlay position for pinned element
     const _onScrollResize = () => {
-      if (!_pinned || !_enabled) return;
       const panel = document.getElementById(`${PREFIX}_panel`);
       if (!panel || panel.style.display !== 'flex') return;
+      if (!_enabled) return;
+
+      // Bug 1 fix: hover mode (not pinned) — layers are viewport-fixed but element
+      // has scrolled away, so clear them immediately to avoid stale overlay.
+      if (!_pinned) {
+        clearLayers();
+        return;
+      }
 
       // #12 — use rAF for scroll/resize too
       if (_rafId) return;
       _rafId = requestAnimationFrame(() => {
         _rafId = null;
         if (!_pinned || !_enabled) return;
-        // #9 — getBoundingClientRect handles fixed/sticky/transformed elements
         const rect  = _pinned.getBoundingClientRect();
         const style = getComputedStyle(_pinned);
         const m  = { t:parseFloat(style.marginTop),       l:parseFloat(style.marginLeft),
@@ -2232,5 +2238,17 @@ td:first-child{color:#6c7086;width:40%}.sel{background:#252535;padding:6px 10px;
     on, off,
     export: exportData,
     generateStableSelector,
+    // v2.4
+    setTheme,
+    patchAddEventListener,
+    clearMutations,
+    // v2.5
+    detectFramework,
+    // v3.0
+    audit,
+    connect,
+    disconnect,
+    share,
+    joinSession,
   };
 }));
