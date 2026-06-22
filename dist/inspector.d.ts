@@ -1,5 +1,5 @@
 /**
- * @armvs/dom-inspector v2.4.0
+ * @armvs/dom-inspector v2.5.0
  */
 
 export interface CustomTheme {
@@ -29,6 +29,15 @@ export interface MutationEntry {
   tag: string; attr?: string; time: number;
 }
 
+export interface FrameworkInfo {
+  framework: 'react' | 'vue' | 'angular';
+  name: string;
+  hooks?: Array<{ type: string; value?: string }>;
+  props?: string[];
+  inputs?: string[];
+  version?: number | string;
+}
+
 export interface EventHandle { off(): void; }
 
 export interface InspectorEventMap {
@@ -49,6 +58,7 @@ export interface InspectorInstance {
   setTheme(theme: 'dark' | 'light' | CustomTheme): void;
   patchAddEventListener(target: EventTarget): void;
   clearMutations(): void;
+  detectFramework(element: Element): FrameworkInfo | null;
 }
 
 declare const DOMInspector: InspectorInstance;

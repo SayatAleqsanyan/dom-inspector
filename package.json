@@ -1,6 +1,6 @@
 {
   "name": "@armvs/dom-inspector",
-  "version": "2.3.0",
+  "version": "2.5.0",
   "description": "Lightweight DOM inspector inspired by browser DevTools. Inspect elements, visualize box model, view selectors and debug layouts directly on any webpage.",
   "main": "dist/inspector.js",
   "types": "dist/inspector.d.ts",
@@ -10,7 +10,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
-  "keywords": ["dom","inspector","devtools","debug","layout","css","selector","html","developer-tools"],
+  "keywords": ["dom","inspector","devtools","debug","layout","css","selector","html","developer-tools","react","vue","angular"],
   "author": "Sayat",
   "license": "MIT",
   "type": "commonjs",
