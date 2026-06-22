@@ -1,35 +1,342 @@
-# @armvs/dom-inspector · v2.3.0
+# @armvs/dom-inspector
 
-Lightweight DOM inspector inspired by browser DevTools.  
-Inspect elements, box model, selectors, and debug layouts directly on any webpage.
+Lightweight DevTools-inspired DOM Inspector for any website.
 
-## Install
+Inspect elements, visualize the CSS box model, navigate the DOM tree, copy selectors and debug layouts without opening browser DevTools.
+
+<p align="center">
+
+<img width="900" src="docs/demo.gif">
+
+</p>
+
+---
+
+## Features
+
+✅ DevTools-style element inspection
+
+✅ CSS box model visualization
+
+✅ DOM breadcrumbs navigation
+
+✅ CSS selector generation
+
+✅ One-click selector copy
+
+✅ Draggable inspector panel
+
+✅ Runtime enable / disable
+
+✅ Framework agnostic
+
+✅ TypeScript support
+
+✅ Zero dependencies
+
+✅ Vitest unit tests
+
+✅ Playwright integration tests
+
+---
+
+# Installation
+
+### npm
 
 ```bash
-npm install @armvs/dom-inspector@v2.3.0
+npm install @armvs/dom-inspector
 ```
 
-## Usage
+### pnpm
+
+```bash
+pnpm add @armvs/dom-inspector
+```
+
+### yarn
+
+```bash
+yarn add @armvs/dom-inspector
+```
+
+### CDN
 
 ```html
-<link rel="stylesheet" href="node_modules/@armvs/dom-inspector/dist/inspector.css">
-<script src="node_modules/@armvs/dom-inspector/dist/inspector.js"></script>
-<script>
-  DOMInspector.init(true);
-</script>
+<link rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/@armvs/dom-inspector/dist/inspector.css">
+
+<script src="https://cdn.jsdelivr.net/npm/@armvs/dom-inspector/dist/inspector.js"></script>
+
 ```
 
-## Keyboard shortcuts
+---
 
-| Key | Action |
-|---|---|
-| Alt + hover | Inspect element |
-| Alt + click | Pin element |
-| Escape | Close panel |
-| ↑ Arrow | Navigate to parent |
-| ↓ Arrow | Navigate to first child |
-| ← → Arrows | Navigate to siblings |
+# Quick Start
 
-## License
+Enable inspector permanently
+
+```js
+DOMInspector.init(true);
+```
+
+Enable only for localhost
+
+```js
+DOMInspector.init(
+
+()=>location.hostname==="localhost"
+
+);
+
+```
+
+Enable only for administrators
+
+```js
+DOMInspector.init(
+
+()=>window.isAdmin===true
+
+);
+
+```
+
+Disable inspector
+
+```js
+DOMInspector.init(false);
+```
+
+---
+
+# Framework Examples
+
+## React
+
+```jsx
+
+import DOMInspector from '@armvs/dom-inspector';
+
+import '@armvs/dom-inspector/dist/inspector.css';
+
+
+
+useEffect(()=>{
+
+DOMInspector.init(true);
+
+},[]);
+
+```
+
+---
+
+## Vue
+
+```js
+
+import DOMInspector from '@armvs/dom-inspector';
+
+
+
+onMounted(()=>{
+
+DOMInspector.init(true);
+
+});
+
+
+```
+
+---
+
+## Angular
+
+```ts
+
+constructor(){
+
+
+DOMInspector.init(true);
+
+
+}
+
+
+```
+
+---
+
+## Laravel Blade
+
+```blade
+
+
+<link rel="stylesheet"
+
+href="{{ asset('vendor/inspector/inspector.css') }}">
+
+
+
+<script src="{{ asset('vendor/inspector/inspector.js') }}"></script>
+
+
+
+<script>
+
+
+DOMInspector.init(
+
+auth()->user()?->isAdmin() ?? false
+
+);
+
+
+</script>
+
+```
+
+---
+
+## Dynamic Laravel Mode
+
+```blade
+
+<body
+
+data-inspector="{{ auth()->user()?->isAdmin() ? '1' : '0' }}">
+
+
+
+<script>
+
+
+DOMInspector.init(
+
+()=>document.body.dataset.inspector==='1'
+
+);
+
+
+</script>
+
+
+```
+
+---
+
+# API
+
+## init()
+
+```js
+
+DOMInspector.init(true);
+
+
+DOMInspector.init(false);
+
+
+DOMInspector.init(
+
+()=>location.hostname==='localhost'
+
+);
+
+
+```
+
+---
+
+## Runtime Methods
+
+```js
+
+
+DOMInspector.enable();
+
+
+DOMInspector.disable();
+
+
+DOMInspector.destroy();
+
+
+```
+
+---
+
+# Keyboard Shortcuts
+
+| Shortcut    | Action          |
+| ----------- | --------------- |
+| Alt + Hover | Inspect element |
+| Alt + Click | Pin panel       |
+| Esc         | Close panel     |
+| Drag Header | Move panel      |
+| 📌          | Pin inspector   |
+| ⧉           | Copy selector   |
+
+---
+
+# Testing
+
+Run unit tests
+
+```bash
+npm test
+```
+
+Run integration tests
+
+```bash
+npx playwright test
+```
+
+---
+
+# Browser Support
+
+| Browser | Support |
+| ------- | ------- |
+| Chrome  | ✅       |
+| Firefox | ✅       |
+| Edge    | ✅       |
+| Safari  | ✅       |
+
+---
+
+# Security
+
+Uses textContent only
+
+No innerHTML
+
+Cross-origin stylesheets ignored safely
+
+Clipboard errors handled gracefully
+
+destroy() removes all listeners and DOM nodes
+
+No overhead when disabled
+
+---
+
+# Versions
+
+## 2.x
+
+Standalone JavaScript library
+
+## 3.x
+
+Standalone library
+
+Browser extension support
+
+---
+
+# License
 
 MIT
