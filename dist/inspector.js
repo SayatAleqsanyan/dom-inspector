@@ -42,6 +42,17 @@
   let _hoverTimer = null;
   const HOVER_DEBOUNCE = 40; // ms
 
+  // v2.4 — Theme system
+  let _theme = 'dark'; // 'dark' | 'light' | object
+
+  // v2.4 — DOM Mutation History
+  let _mutationObserver = null;
+  let _mutationHistory  = [];
+  const MAX_MUTATIONS   = 80;
+
+  // v2.4 — Touch support
+  let _touchStartX = 0, _touchStartY = 0;
+
   // ── SSR GUARD ──
   function isBrowser() {
     return typeof window !== 'undefined' && typeof document !== 'undefined';
@@ -79,53 +90,130 @@
   }
 
   // ── SELECTOR GENERATOR ──
+  // Returns stable single-segment selector for a node, preferring test-friendly attributes
   function getSimpleSelector(node) {
-    let s = node.tagName.toLowerCase();
-    if (node.id && !node.id.startsWith(PREFIX)) return s + '#' + node.id;
+    const tag = node.tagName.toLowerCase();
+    if (node.id && !node.id.startsWith(PREFIX)) return tag + '#' + node.id;
+    // Prefer data-testid > data-test > data-cy > data-qa > other data-* attributes
+    const stableAttrs = ['data-testid', 'data-test', 'data-cy', 'data-qa'];
+    for (const attr of stableAttrs) {
+      const val = node.getAttribute(attr);
+      if (val) return `${tag}[${attr}="${val}"]`;
+    }
+    // Any other data-* attribute
+    for (const attr of Array.from(node.attributes)) {
+      if (attr.name.startsWith('data-') && !attr.name.startsWith('data-v-')) {
+        return `${tag}[${attr.name}="${attr.value}"]`;
+      }
+    }
     if (node.className && typeof node.className === 'string') {
       const cls = node.className.trim().split(/\s+/)
         .filter(c => !c.startsWith(PREFIX) && c !== '');
-      if (cls.length) s += '.' + cls.slice(0, 2).join('.');
+      if (cls.length) return tag + '.' + cls.slice(0, 2).join('.');
     }
-    return s;
+    return tag;
   }
 
-  function getFullSelector(node) {
+  // Checks if a selector uniquely matches exactly one element in the document
+  function isUnique(selector) {
+    try { return document.querySelectorAll(selector).length === 1; } catch (_) { return false; }
+  }
+
+  // generateStableSelector: builds the most stable, concise selector possible.
+  // Preference order: id > data-testid/test/cy/qa > data-* > unique class combo > nth-of-type
+  function generateStableSelector(node) {
+    if (!node || node.nodeType !== 1) return '';
+    const tag = node.tagName.toLowerCase();
+
+    // id — most stable
+    if (node.id && !node.id.startsWith(PREFIX)) {
+      const sel = `#${node.id}`;
+      if (isUnique(sel)) return sel;
+    }
+
+    // data-testid / data-test / data-cy / data-qa
+    const stableAttrs = ['data-testid', 'data-test', 'data-cy', 'data-qa'];
+    for (const attr of stableAttrs) {
+      const val = node.getAttribute(attr);
+      if (val) {
+        const sel = `[${attr}="${val}"]`;
+        if (isUnique(sel)) return sel;
+      }
+    }
+
+    // Any other data-* attribute
+    for (const attr of Array.from(node.attributes)) {
+      if (attr.name.startsWith('data-') && !attr.name.startsWith('data-v-')) {
+        const sel = `${tag}[${attr.name}="${attr.value}"]`;
+        if (isUnique(sel)) return sel;
+      }
+    }
+
+    // Unique class combinations (try adding more classes until unique)
+    if (node.className && typeof node.className === 'string') {
+      const cls = node.className.trim().split(/\s+/)
+        .filter(c => !c.startsWith(PREFIX) && c !== '');
+      for (let i = 1; i <= cls.length; i++) {
+        const sel = tag + '.' + cls.slice(0, i).join('.');
+        if (isUnique(sel)) return sel;
+      }
+    }
+
+    // Fall back to structural path — but avoid nth-child, use nth-of-type only when needed
     const parts = [];
     let cur = node;
     while (cur && cur.nodeType === 1 && cur !== document.documentElement) {
-      let seg = cur.tagName.toLowerCase();
+      // Try to anchor on an id or data-testid ancestor to keep selector short
       if (cur.id && !cur.id.startsWith(PREFIX)) {
-        seg += '#' + cur.id;
-        parts.unshift(seg);
+        parts.unshift(`#${cur.id}`);
         break;
       }
-      if (cur.className && typeof cur.className === 'string') {
-        const cls = cur.className.trim().split(/\s+/)
-          .filter(c => !c.startsWith(PREFIX) && c !== '');
-        if (cls.length) seg += '.' + cls.slice(0, 2).join('.');
+      for (const attr of stableAttrs) {
+        const val = cur.getAttribute(attr);
+        if (val) { parts.unshift(`[${attr}="${val}"]`); break; }
       }
+      if (parts.length && parts[0].startsWith('[')) break;
+
+      let seg = cur.tagName.toLowerCase();
+      // Count same-tag siblings only — nth-of-type is more stable than nth-child
       let idx = 1;
       let sib = cur.previousElementSibling;
       while (sib) { if (sib.tagName === cur.tagName) idx++; sib = sib.previousElementSibling; }
       if (idx > 1) seg += `:nth-of-type(${idx})`;
       parts.unshift(seg);
       cur = cur.parentElement;
-      if (parts.length > 6) break;
+      if (parts.length > 5) break;
     }
     return parts.join(' > ');
   }
 
+  function getFullSelector(node) {
+    return generateStableSelector(node);
+  }
+
   function getXPath(node) {
+    if (node === document.body) return '/html/body';
+    // If inside a shadow root, note the boundary
+    if (isInShadow(node)) {
+      return '(shadow-root) ' + getXPathSegment(node);
+    }
+    return getXPathSegment(node);
+  }
+
+  function getXPathSegment(node) {
     if (node === document.body) return '/html/body';
     const parts = [];
     let cur = node;
-    while (cur && cur.nodeType === 1 && cur !== document.documentElement) {
+    while (cur && cur.nodeType === 1) {
+      if (cur instanceof ShadowRoot) break;
+      const parent = cur.parentNode;
+      if (!parent || parent instanceof ShadowRoot) break;
       let idx = 1;
       let sib = cur.previousElementSibling;
       while (sib) { if (sib.tagName === cur.tagName) idx++; sib = sib.previousElementSibling; }
       parts.unshift(cur.tagName.toLowerCase() + (idx > 1 ? `[${idx}]` : ''));
-      cur = cur.parentElement;
+      cur = parent;
+      if (cur === document.documentElement || cur === document.body) break;
     }
     return '/html/' + parts.join('/');
   }
@@ -146,12 +234,646 @@
       || node.classList.contains(`${PREFIX}_dim`);
   }
 
+  // ── SHADOW DOM HELPERS ──
+  // Returns true if a node lives inside a shadow root
+  function isInShadow(node) {
+    let cur = node;
+    while (cur) {
+      if (cur instanceof ShadowRoot) return true;
+      cur = cur.parentNode;
+    }
+    return false;
+  }
+
+  // Walk up through shadow boundaries to get the full host chain
+  function getShadowHostChain(node) {
+    const chain = [];
+    let cur = node.parentNode || node.parentElement;
+    while (cur) {
+      if (cur instanceof ShadowRoot) {
+        chain.unshift({ type: 'shadow', host: cur.host });
+        cur = cur.host.parentNode || cur.host.parentElement;
+      } else {
+        cur = cur.parentNode || cur.parentElement;
+      }
+    }
+    return chain;
+  }
+
+  // Generate a selector string that includes shadow host context
+  function getShadowSelector(node) {
+    const parts = [];
+    let cur = node;
+    while (cur && cur.nodeType === 1) {
+      const parent = cur.parentNode;
+      if (parent instanceof ShadowRoot) {
+        // We crossed a shadow boundary — note the host
+        const hostSel = generateStableSelector(parent.host);
+        parts.unshift(`>> ${cur.tagName.toLowerCase()}`);
+        parts.unshift(hostSel);
+        cur = parent.host.parentNode || parent.host.parentElement;
+        break;
+      }
+      parts.unshift(getSimpleSelector(cur));
+      cur = cur.parentElement;
+      if (parts.length > 6) break;
+    }
+    return parts.join(' > ');
+  }
+
+  // ── THEME SYSTEM (v2.4) ──
+  // Applies theme to the panel. theme: 'dark' | 'light' | { primary, bg, text, border, ... }
+  function applyTheme(panel, theme) {
+    if (!panel) return;
+    panel.classList.remove('insp-dark', 'insp-light', 'insp-custom');
+    // Remove any previously injected custom theme style
+    const old = document.getElementById(`${PREFIX}_custom_theme`);
+    if (old) old.parentNode.removeChild(old);
+
+    if (theme === 'dark' || !theme) {
+      panel.classList.add('insp-dark');
+      _isDark = true;
+    } else if (theme === 'light') {
+      panel.classList.add('insp-light');
+      _isDark = false;
+    } else if (typeof theme === 'object') {
+      // Custom theme: inject CSS vars onto the panel
+      panel.classList.add('insp-custom');
+      _isDark = false;
+      const vars = Object.entries(theme)
+        .map(([k, v]) => `  --insp-${k}: ${v};`)
+        .join('\n');
+      const style = document.createElement('style');
+      style.id = `${PREFIX}_custom_theme`;
+      style.textContent = `#${PREFIX}_panel.insp-custom {\n${vars}\n}`;
+      document.head.appendChild(style);
+    }
+  }
+
+  // ── DOM MUTATION HISTORY (v2.4) ──
+  function startMutationObserver() {
+    if (_mutationObserver) return;
+    _mutationObserver = new MutationObserver((records) => {
+      for (const rec of records) {
+        const target = rec.target;
+        // Skip inspector nodes
+        if (target.id && target.id.startsWith(PREFIX)) continue;
+        if (target.closest && target.closest(`#${PREFIX}_panel`)) continue;
+
+        let entry = null;
+        if (rec.type === 'childList') {
+          rec.addedNodes.forEach(n => {
+            if (n.nodeType === 1 && !(n.id && n.id.startsWith(PREFIX))) {
+              entry = { type: 'added',   tag: n.tagName ? n.tagName.toLowerCase() : '#text', time: Date.now() };
+            }
+          });
+          rec.removedNodes.forEach(n => {
+            if (n.nodeType === 1 && !(n.id && n.id.startsWith(PREFIX))) {
+              entry = { type: 'removed', tag: n.tagName ? n.tagName.toLowerCase() : '#text', time: Date.now() };
+            }
+          });
+        } else if (rec.type === 'attributes') {
+          const tag = target.tagName ? target.tagName.toLowerCase() : '?';
+          entry = { type: 'attr',    tag, attr: rec.attributeName, time: Date.now() };
+        } else if (rec.type === 'characterData') {
+          const p = rec.target.parentElement;
+          entry = { type: 'text',    tag: p ? p.tagName.toLowerCase() : '#text', time: Date.now() };
+        }
+        if (entry) {
+          _mutationHistory.unshift(entry);
+          if (_mutationHistory.length > MAX_MUTATIONS) _mutationHistory.length = MAX_MUTATIONS;
+          emit('mutation', entry);
+          // Live-update mutation pane if visible
+          if (_activeTab === 'mutations') renderMutationPane();
+        }
+      }
+    });
+    _mutationObserver.observe(document.body, {
+      childList: true, subtree: true, attributes: true, characterData: true,
+    });
+  }
+
+  function stopMutationObserver() {
+    if (_mutationObserver) { _mutationObserver.disconnect(); _mutationObserver = null; }
+  }
+
+  function renderMutationPane() {
+    const list = document.getElementById(`${PREFIX}_mut_list`);
+    if (!list) return;
+    while (list.firstChild) list.removeChild(list.firstChild);
+    if (_mutationHistory.length === 0) {
+      const empty = el('span', 'insp-mut-empty', { text: 'No mutations recorded yet.' });
+      list.appendChild(empty); return;
+    }
+    _mutationHistory.forEach(m => {
+      const r = el('div', 'insp-mut-row');
+      const badge = el('span', `insp-mut-badge insp-mut-${m.type}`);
+      const iconMap = { added: '+', removed: '−', attr: '~', text: 'T' };
+      const labelMap = { added: 'added', removed: 'removed', attr: 'attr', text: 'text' };
+      badge.textContent = iconMap[m.type] || '?';
+      const desc = el('span', 'insp-mut-desc');
+      let txt = `<${m.tag}>`;
+      if (m.type === 'attr') txt += ` .${m.attr}`;
+      desc.textContent = `${labelMap[m.type]}  ${txt}`;
+      const time = el('span', 'insp-mut-time');
+      const age = Math.round((Date.now() - m.time) / 1000);
+      time.textContent = age < 2 ? 'just now' : `${age}s ago`;
+      r.append(badge, desc, time);
+      list.appendChild(r);
+    });
+  }
+
+  // ── EVENT LISTENER INSPECTOR (v2.4) ──
+  // Reads event listeners via getEventListeners (DevTools only) or falls back to
+  // tracking listeners added via the inspected page's own addEventListener patches.
+  // We maintain a WeakMap-based registry that pages can opt into.
+  const _listenerRegistry = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
+
+  function getAttachedListeners(node) {
+    // Primary: Chrome DevTools protocol (only works in DevTools context)
+    if (typeof getEventListeners === 'function') {
+      try {
+        const map = getEventListeners(node);
+        return Object.entries(map).map(([type, handlers]) => ({ type, count: handlers.length }));
+      } catch (_) {}
+    }
+    // Secondary: our own registry (populated if page uses patchAddEventListener())
+    if (_listenerRegistry && _listenerRegistry.has(node)) {
+      const map = _listenerRegistry.get(node);
+      return Object.entries(map).map(([type, handlers]) => ({ type, count: handlers.length }));
+    }
+    // Fallback: infer from element type
+    return inferLikelyListeners(node);
+  }
+
+  function inferLikelyListeners(node) {
+    const tag = node.tagName.toLowerCase();
+    const listeners = [];
+    const inlineEvents = ['onclick','onmousedown','onmouseup','onkeydown','onkeyup',
+      'onchange','oninput','onsubmit','onfocus','onblur','onscroll'];
+    inlineEvents.forEach(ev => {
+      if (node[ev]) listeners.push({ type: ev.slice(2), count: 1, inferred: false });
+    });
+    // Check for common ARIA/role patterns
+    const role = node.getAttribute('role');
+    if (tag === 'button' || role === 'button') listeners.push({ type: 'click', count: '?', inferred: true });
+    if (tag === 'a' && node.href)             listeners.push({ type: 'click', count: '?', inferred: true });
+    if (tag === 'form')                       listeners.push({ type: 'submit', count: '?', inferred: true });
+    if (['input','select','textarea'].includes(tag)) {
+      listeners.push({ type: 'change', count: '?', inferred: true });
+      listeners.push({ type: 'input',  count: '?', inferred: true });
+    }
+    return listeners;
+  }
+
+  function renderEventsPane(node) {
+    const list = document.getElementById(`${PREFIX}_events_list`);
+    const note = document.getElementById(`${PREFIX}_events_note`);
+    if (!list) return;
+    while (list.firstChild) list.removeChild(list.firstChild);
+
+    const listeners = getAttachedListeners(node);
+    const hasDevTools = typeof getEventListeners === 'function';
+    const hasRegistry = _listenerRegistry && _listenerRegistry.has(node);
+
+    if (note) {
+      note.textContent = hasDevTools
+        ? 'Via DevTools getEventListeners().'
+        : hasRegistry
+          ? 'Via listener registry.'
+          : 'Inline handlers + inferred from element type. For full data, open in DevTools or call DOMInspector.patchAddEventListener().';
+    }
+
+    if (listeners.length === 0) {
+      list.appendChild(el('span', 'insp-evt-empty', { text: 'No event listeners detected.' }));
+      return;
+    }
+
+    // Deduplicate inferred vs real
+    const seen = new Map();
+    listeners.forEach(l => {
+      if (!seen.has(l.type) || !l.inferred) seen.set(l.type, l);
+    });
+
+    seen.forEach(l => {
+      const r = el('div', 'insp-evt-row');
+      const badge = el('span', 'insp-evt-badge', { text: l.type });
+      const count = el('span', `insp-evt-count${l.inferred ? ' insp-evt-inferred' : ''}`);
+      count.textContent = l.inferred ? '?' : `×${l.count}`;
+      count.title = l.inferred ? 'Inferred from element type' : `${l.count} handler(s)`;
+      r.append(badge, count);
+      list.appendChild(r);
+    });
+  }
+
+  // ── FRAMEWORK DETECTION (v2.5) ──
+
+  // React: reads component name from Fiber internal
+  function detectReact(node) {
+    // React 16+ stores fiber on __reactFiber$... or __reactInternalInstance$...
+    const fiberKey = Object.keys(node).find(k =>
+      k.startsWith('__reactFiber') || k.startsWith('__reactInternalInstance')
+    );
+    if (!fiberKey) return null;
+
+    let fiber = node[fiberKey];
+    // Walk up fiber tree to find the nearest named function/class component
+    let cur = fiber;
+    while (cur) {
+      const type = cur.type;
+      if (type) {
+        // Function component or class component
+        const name = typeof type === 'function'
+          ? (type.displayName || type.name || null)
+          : typeof type === 'string' ? null : null;
+        if (name && name !== 'Unknown' && !/^[a-z]/.test(name)) {
+          // Also check for hooks
+          const hooks = collectReactHooks(cur);
+          return { name, hooks };
+        }
+      }
+      cur = cur.return || null;
+    }
+    return null;
+  }
+
+  function collectReactHooks(fiber) {
+    const hooks = [];
+    try {
+      let memoizedState = fiber.memoizedState;
+      while (memoizedState) {
+        const queue = memoizedState.queue;
+        if (queue !== null && queue !== undefined) {
+          // useState or useReducer
+          const val = memoizedState.memoizedState;
+          if (typeof val !== 'function' && typeof val !== 'object') {
+            hooks.push({ type: 'state', value: String(val).slice(0, 30) });
+          } else {
+            hooks.push({ type: 'state' });
+          }
+        } else if (typeof memoizedState.memoizedState === 'function') {
+          hooks.push({ type: 'effect' });
+        } else if (memoizedState.deps !== undefined) {
+          hooks.push({ type: 'memo/callback' });
+        }
+        memoizedState = memoizedState.next;
+        if (hooks.length >= 8) break; // cap for display
+      }
+    } catch (_) {}
+    return hooks;
+  }
+
+  // Vue: reads component from __vue_app__ or __vueParentComponent
+  function detectVue(node) {
+    // Vue 3
+    let cur = node;
+    while (cur && cur !== document.body) {
+      if (cur.__vueParentComponent) {
+        const comp = cur.__vueParentComponent;
+        const name = comp.type?.name
+          || comp.type?.displayName
+          || comp.type?.__name
+          || (comp.type === Object(comp.type) ? extractVueName(comp) : null);
+        if (name) {
+          const props = comp.props ? Object.keys(comp.props).slice(0, 6) : [];
+          return { name, version: 3, props };
+        }
+      }
+      // Vue 2
+      if (cur.__vue__) {
+        const vm = cur.__vue__;
+        const name = vm.$options?.name
+          || vm.$options?._componentTag
+          || vm.$options?.components && Object.keys(vm.$options.components)[0]
+          || null;
+        if (name) {
+          const props = vm.$options?.props ? Object.keys(vm.$options.props).slice(0, 6) : [];
+          return { name, version: 2, props };
+        }
+      }
+      cur = cur.parentElement;
+    }
+    return null;
+  }
+
+  function extractVueName(comp) {
+    // Last-resort: try to derive from file path stored in __file
+    if (comp.type?.__file) {
+      const file = comp.type.__file;
+      const base = file.split('/').pop().replace(/\.\w+$/, '');
+      return base || null;
+    }
+    return null;
+  }
+
+  // Angular: reads component from ng attributes or __ngContext__
+  function detectAngular(node) {
+    let cur = node;
+    while (cur && cur !== document.body) {
+      // Angular Ivy (v9+): __ngContext__ on host element
+      if (cur.__ngContext__ !== undefined) {
+        const ctx = cur.__ngContext__;
+        // ctx is an LView array; index 8 is the component instance
+        if (Array.isArray(ctx)) {
+          const instance = ctx[8];
+          if (instance) {
+            const name = instance.constructor?.name || null;
+            if (name && name !== 'Object') {
+              // Read @Input() property names
+              const inputs = Object.keys(instance)
+                .filter(k => !k.startsWith('_') && !k.startsWith('ng'))
+                .slice(0, 6);
+              return { name, version: 'Ivy', inputs };
+            }
+          }
+        }
+      }
+      // Angular older: ng-version attribute on app root
+      if (cur.hasAttribute && cur.hasAttribute('ng-version')) {
+        return { name: 'AppRoot', version: cur.getAttribute('ng-version'), inputs: [] };
+      }
+      cur = cur.parentElement;
+    }
+    return null;
+  }
+
+  function renderFrameworkPane(node) {
+    const container = document.getElementById(`${PREFIX}_fw_content`);
+    if (!container) return;
+    while (container.firstChild) container.removeChild(container.firstChild);
+
+    const react   = detectReact(node);
+    const vue     = detectVue(node);
+    const angular = detectAngular(node);
+
+    if (!react && !vue && !angular) {
+      const none = el('div', 'insp-fw-none');
+      none.textContent = 'No React, Vue, or Angular component detected on this element or its ancestors.';
+      container.appendChild(none);
+      return;
+    }
+
+    if (react) {
+      container.appendChild(fwSection('React', react.name, '#61dafb', [
+        ['Component', react.name],
+        ...react.hooks.map((h, i) => [
+          `Hook ${i + 1}`,
+          h.type + (h.value !== undefined ? ` = ${h.value}` : ''),
+        ]),
+      ]));
+    }
+
+    if (vue) {
+      container.appendChild(fwSection('Vue ' + vue.version, vue.name, '#42b883', [
+        ['Component', vue.name],
+        ...(vue.props.length ? [['Props', vue.props.join(', ')]] : []),
+      ]));
+    }
+
+    if (angular) {
+      container.appendChild(fwSection('Angular ' + angular.version, angular.name, '#dd1b16', [
+        ['Component', angular.name],
+        ...(angular.inputs.length ? [['Inputs', angular.inputs.join(', ')]] : []),
+      ]));
+    }
+  }
+
+  function fwSection(frameworkLabel, componentName, color, rows) {
+    const wrap = el('div', 'insp-fw-section');
+
+    const header = el('div', 'insp-fw-header');
+    const dot = el('span', 'insp-fw-dot');
+    dot.style.background = color;
+    const label = el('span', 'insp-fw-label');
+    label.textContent = frameworkLabel;
+    const comp = el('span', 'insp-fw-comp');
+    comp.textContent = componentName;
+    header.append(dot, label, comp);
+    wrap.appendChild(header);
+
+    rows.forEach(([k, v]) => {
+      const r = el('div', 'insp-fw-row');
+      r.append(
+        el('span', 'insp-fw-key', { text: k }),
+        el('span', 'insp-fw-val', { text: v })
+      );
+      wrap.appendChild(r);
+    });
+
+    return wrap;
+  }
+
   // ── EVENT EMITTER ──
   function emit(name, detail) {
     (_handlers[name] || []).forEach(fn => { try { fn(detail); } catch(_) {} });
     if (isBrowser()) {
       document.dispatchEvent(new CustomEvent(`dom-inspector:${name}`, { detail }));
     }
+  }
+
+  // ── v3.0: FLEX / GRID INSPECTOR ──
+
+  function getFlexInfo(style) {
+    if (style.display !== 'flex' && style.display !== 'inline-flex') return null;
+    return {
+      display:        style.display,
+      direction:      style.flexDirection,
+      wrap:           style.flexWrap,
+      justifyContent: style.justifyContent,
+      alignItems:     style.alignItems,
+      alignContent:   style.alignContent,
+      gap:            style.gap !== 'normal' ? style.gap : (style.rowGap + ' / ' + style.columnGap),
+    };
+  }
+
+  function getGridInfo(style) {
+    if (style.display !== 'grid' && style.display !== 'inline-grid') return null;
+    const parseTracks = (tmpl) => {
+      if (!tmpl || tmpl === 'none') return 0;
+      return tmpl.trim().split(/\s+(?=[0-9]|auto|fr|min|max|repeat|fit|\[)/).length;
+    };
+    return {
+      display:         style.display,
+      columns:         `${parseTracks(style.gridTemplateColumns)} (${shortVal(style.gridTemplateColumns, 26)})`,
+      rows:            `${parseTracks(style.gridTemplateRows)} (${shortVal(style.gridTemplateRows, 26)})`,
+      gap:             style.gap !== 'normal' ? style.gap : (style.rowGap + ' / ' + style.columnGap),
+      'auto-flow':     style.gridAutoFlow,
+      alignItems:      style.alignItems,
+      justifyItems:    style.justifyItems,
+    };
+  }
+
+  function getFlexItemInfo(node, style) {
+    const parent = node.parentElement;
+    if (!parent) return null;
+    const ps = getComputedStyle(parent);
+    if (ps.display !== 'flex' && ps.display !== 'inline-flex') return null;
+    return {
+      flexGrow:   style.flexGrow,
+      flexShrink: style.flexShrink,
+      flexBasis:  style.flexBasis,
+      alignSelf:  style.alignSelf,
+      order:      style.order,
+    };
+  }
+
+  function getGridItemInfo(node, style) {
+    const parent = node.parentElement;
+    if (!parent) return null;
+    const ps = getComputedStyle(parent);
+    if (ps.display !== 'grid' && ps.display !== 'inline-grid') return null;
+    return {
+      'col-start':  style.gridColumnStart,
+      'col-end':    style.gridColumnEnd,
+      'row-start':  style.gridRowStart,
+      'row-end':    style.gridRowEnd,
+      area:         style.gridArea,
+      alignSelf:    style.alignSelf,
+      justifySelf:  style.justifySelf,
+    };
+  }
+
+  function renderLayoutInspectorPane(node, style) {
+    const container = document.getElementById(`${PREFIX}_layout_inspector`);
+    if (!container) return;
+    while (container.firstChild) container.removeChild(container.firstChild);
+
+    const flex     = getFlexInfo(style);
+    const grid     = getGridInfo(style);
+    const flexItem = getFlexItemInfo(node, style);
+    const gridItem = getGridItemInfo(node, style);
+
+    if (!flex && !grid && !flexItem && !gridItem) {
+      const none = el('div', 'insp-li-none');
+      none.textContent = `display: ${style.display} — no flex/grid context.`;
+      container.appendChild(none); return;
+    }
+
+    function liSection(title, color, data) {
+      const wrap = el('div', 'insp-li-section');
+      const hdr = el('div', 'insp-li-header');
+      const dot = el('span', 'insp-li-dot'); dot.style.background = color;
+      hdr.append(dot, el('span', 'insp-li-label', { text: title }));
+      wrap.appendChild(hdr);
+      Object.entries(data).forEach(([k, v]) => {
+        if (v === null || v === undefined || v === '' || v === 'normal' || v === '0px') return;
+        const r = el('div', 'insp-li-row');
+        r.append(el('span', 'insp-li-key', { text: k }), el('span', 'insp-li-val', { text: String(v) }));
+        wrap.appendChild(r);
+      });
+      return wrap;
+    }
+
+    if (flex)     container.appendChild(liSection('Flex Container', '#89b4fa', flex));
+    if (grid)     container.appendChild(liSection('Grid Container', '#a6e3a1', grid));
+    if (flexItem) container.appendChild(liSection('Flex Item', '#cba6f7', flexItem));
+    if (gridItem) container.appendChild(liSection('Grid Item', '#f9e2af', gridItem));
+  }
+
+  // ── v3.0: ACCESSIBILITY AUDIT ──
+
+  const A11Y_RULES = [
+    { id:'img-alt',       sev:'error',   msg:'<img> missing alt attribute.',
+      check: n => n.tagName==='IMG' && !n.getAttribute('alt') },
+    { id:'button-name',   sev:'error',   msg:'<button> has no accessible name.',
+      check: n => n.tagName==='BUTTON' && !n.textContent.trim() && !n.getAttribute('aria-label') && !n.getAttribute('aria-labelledby') },
+    { id:'input-label',   sev:'error',   msg:'Form control has no associated label.',
+      check: n => {
+        if (!['INPUT','SELECT','TEXTAREA'].includes(n.tagName)) return false;
+        if (n.getAttribute('type')==='hidden') return false;
+        return !(n.getAttribute('aria-label') || n.getAttribute('aria-labelledby')
+          || (n.id && document.querySelector(`label[for="${n.id}"]`)));
+      }},
+    { id:'link-name',     sev:'error',   msg:'<a> has no accessible name.',
+      check: n => n.tagName==='A' && !n.textContent.trim() && !n.getAttribute('aria-label') },
+    { id:'tabindex-pos',  sev:'warning', msg:'tabindex > 0 disrupts tab order. Use 0.',
+      check: n => parseInt(n.getAttribute('tabindex'),10) > 0 },
+    { id:'aria-hidden-focus', sev:'warning', msg:'aria-hidden="true" on a focusable element.',
+      check: n => n.getAttribute('aria-hidden')==='true' && isFocusable(n) },
+    { id:'interactive-role', sev:'warning', msg:'Interactive role on non-focusable element — add tabindex="0".',
+      check: n => {
+        const role = n.getAttribute('role');
+        return ['button','link','menuitem','tab','checkbox','radio','switch'].includes(role) && !isFocusable(n);
+      }},
+    { id:'contrast',      sev:'warning', msg:'Estimated contrast ratio < 4.5:1 (WCAG AA).',
+      check: n => {
+        if (!n.textContent.trim()) return false;
+        const s = getComputedStyle(n);
+        const bgL = relLum(s.backgroundColor), fgL = relLum(s.color);
+        if (bgL===null||fgL===null) return false;
+        const ratio = (Math.max(bgL,fgL)+0.05)/(Math.min(bgL,fgL)+0.05);
+        return ratio < 4.5;
+      }},
+  ];
+
+  function relLum(colorStr) {
+    const m = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (!m) return null;
+    const ch = v => { const c=parseInt(v)/255; return c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4); };
+    return 0.2126*ch(m[1]) + 0.7152*ch(m[2]) + 0.0722*ch(m[3]);
+  }
+
+  function runA11yAudit(node) {
+    return A11Y_RULES
+      .filter(r => { try { return r.check(node); } catch(_) { return false; } })
+      .map(r => ({ id: r.id, message: r.msg, severity: r.sev }));
+  }
+
+  function renderA11yAuditSection(node) {
+    const auditEl = document.getElementById(`${PREFIX}_a11y_audit`);
+    if (!auditEl) return;
+    while (auditEl.firstChild) auditEl.removeChild(auditEl.firstChild);
+    const issues = runA11yAudit(node);
+    if (issues.length === 0) {
+      auditEl.appendChild(el('div', 'insp-a11y-ok', { text: '✓ No issues detected.' }));
+      return;
+    }
+    issues.forEach(issue => {
+      const row = el('div', `insp-a11y-issue insp-a11y-${issue.severity}`);
+      const icon = { error:'✕', warning:'⚠', info:'ℹ' }[issue.severity] || '•';
+      row.append(
+        el('span', 'insp-a11y-icon', { text: icon }),
+        el('span', 'insp-a11y-msg',  { text: issue.message })
+      );
+      auditEl.appendChild(row);
+    });
+  }
+
+  // ── v3.0: EXPORT FORMATS ──
+
+  function exportAsHTML(data) {
+    if (!data) return '';
+    const tbl = obj => Object.entries(obj)
+      .map(([k,v])=>`<tr><td>${k}</td><td>${String(v).replace(/</g,'&lt;')}</td></tr>`).join('');
+    return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<title>DOM Inspector — ${data.tagName}</title>
+<style>body{font-family:monospace;font-size:12px;background:#1e1e2e;color:#cdd6f4;padding:20px}
+h1{color:#cba6f7}h2{color:#89b4fa;margin-top:16px}
+table{border-collapse:collapse;width:100%}td{padding:3px 8px;border-bottom:1px solid #313244}
+td:first-child{color:#6c7086;width:40%}.sel{background:#252535;padding:6px 10px;border-radius:4px;color:#a6e3a1;word-break:break-all}</style></head>
+<body><h1>&lt;${data.tagName}&gt;</h1>
+<h2>Selector</h2><div class="sel">${data.selector}</div>
+<h2>XPath</h2><div class="sel">${data.xpath}</div>
+<h2>Dimensions</h2><table><tr><td>width</td><td>${data.width}px</td></tr><tr><td>height</td><td>${data.height}px</td></tr></table>
+<h2>Attributes</h2><table>${tbl(data.attributes)}</table>
+<h2>Accessibility</h2><table><tr><td>role</td><td>${data.a11y.role}</td></tr>
+<tr><td>name</td><td>${data.a11y.accessibleName}</td></tr>
+<tr><td>focusable</td><td>${data.a11y.focusable}</td></tr></table>
+</body></html>`;
+  }
+
+  function exportAsMarkdown(data) {
+    if (!data) return '';
+    const tbl = obj => Object.entries(obj).map(([k,v])=>`| \`${k}\` | ${v} |`).join('\n');
+    return `# DOM Inspector — \`<${data.tagName}>\`\n\n## Selector\n\`\`\`css\n${data.selector}\n\`\`\`\n\n## XPath\n\`\`\`\n${data.xpath}\n\`\`\`\n\n## Dimensions\n| | |\n|---|---|\n| width | ${data.width}px |\n| height | ${data.height}px |\n\n## Attributes\n| Attribute | Value |\n|---|---|\n${tbl(data.attributes)}\n\n## Accessibility\n| | |\n|---|---|\n| role | ${data.a11y.role} |\n| name | ${data.a11y.accessibleName} |\n| focusable | ${data.a11y.focusable} |\n`;
+  }
+
+  function exportAsYAML(data) {
+    if (!data) return '';
+    const q = s => `"${String(s).replace(/"/g,'\\"')}"`;
+    const obj2yaml = (obj, indent) => Object.entries(obj)
+      .map(([k,v])=>`${' '.repeat(indent)}${k}: ${q(v)}`).join('\n');
+    return `element: "<${data.tagName}>"\nselector: ${q(data.selector)}\nxpath: ${q(data.xpath)}\ndimensions:\n  width: ${data.width}\n  height: ${data.height}\nattributes:\n${obj2yaml(data.attributes,2)}\naccessibility:\n  role: ${q(data.a11y.role)}\n  name: ${q(data.a11y.accessibleName)}\n  focusable: ${data.a11y.focusable}\n`;
   }
 
   // ── LAYERS ──
@@ -198,7 +920,8 @@
   function buildPanel() {
     if (document.getElementById(`${PREFIX}_panel`)) return;
 
-    const panel = el('div', 'insp-dark', { id: `${PREFIX}_panel` });
+    const panel = el('div', '', { id: `${PREFIX}_panel` });
+    applyTheme(panel, _theme);
 
     // Header
     const header = el('div', '', { id: `${PREFIX}_header` });
@@ -226,6 +949,11 @@
       ['computed','Computed'],
       ['selectors','Selectors'],
       ['dom','DOM Tree'],
+      ['events','Events'],
+      ['mutations','Mutations'],
+      ['framework','Framework'],
+      ['flexgrid','Flex/Grid'],
+      ['audit','Audit'],
       ['a11y','A11y'],
       ['stacking','Stacking'],
       ['vars','CSS Vars'],
@@ -247,6 +975,11 @@
     body.appendChild(buildComputedPane());
     body.appendChild(buildSelectorsPane());
     body.appendChild(buildDOMTreePane());
+    body.appendChild(buildEventsPane());
+    body.appendChild(buildMutationsPane());
+    body.appendChild(buildFrameworkPane());
+    body.appendChild(buildFlexGridPane());
+    body.appendChild(buildAuditPane());
     body.appendChild(buildA11yPane());
     body.appendChild(buildStackingPane());
     body.appendChild(buildVarsPane());
@@ -454,12 +1187,86 @@
     });
     p.appendChild(xpCopyBtn);
 
+    // v3.0 — Export formats
+    p.appendChild(sec('Export'));
+    const exportRow = el('div', 'insp-export-row');
+    [['JSON','json'],['HTML','html'],['Markdown','markdown'],['YAML','yaml']].forEach(([label, fmt]) => {
+      const btn = el('button', 'insp-export-btn', { text: label });
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const result = exportData(fmt === 'json' ? undefined : fmt);
+        if (!result) return;
+        const str = fmt === 'json' ? JSON.stringify(result, null, 2) : result;
+        copyText(str, e.clientX, e.clientY);
+      });
+      exportRow.appendChild(btn);
+    });
+    p.appendChild(exportRow);
+
     return p;
   }
 
   function buildDOMTreePane() {
     const p = el('div', 'insp-pane', { id: `${PREFIX}_pane_dom` });
     p.appendChild(el('div', '', { id: `${PREFIX}_dom_tree` }));
+    return p;
+  }
+
+  // v2.4 — Events pane
+  function buildEventsPane() {
+    const p = el('div', 'insp-pane', { id: `${PREFIX}_pane_events` });
+    const note = el('div', 'insp-events-note', { id: `${PREFIX}_events_note` });
+    p.appendChild(note);
+    p.appendChild(el('div', '', { id: `${PREFIX}_events_list` }));
+    return p;
+  }
+
+  // v2.4 — Mutations pane
+  function buildMutationsPane() {
+    const p = el('div', 'insp-pane', { id: `${PREFIX}_pane_mutations` });
+
+    const controls = el('div', 'insp-mut-controls');
+    const clearBtn = el('button', 'insp-copy-btn', { text: 'Clear history' });
+    clearBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      _mutationHistory = [];
+      renderMutationPane();
+    });
+    controls.appendChild(clearBtn);
+    p.appendChild(controls);
+    p.appendChild(el('div', '', { id: `${PREFIX}_mut_list` }));
+    return p;
+  }
+
+  // v2.5 — Framework pane
+  function buildFrameworkPane() {
+    const p = el('div', 'insp-pane', { id: `${PREFIX}_pane_framework` });
+    p.appendChild(el('div', '', { id: `${PREFIX}_fw_content` }));
+    return p;
+  }
+
+  // v3.0 — Flex/Grid inspector pane
+  function buildFlexGridPane() {
+    const p = el('div', 'insp-pane', { id: `${PREFIX}_pane_flexgrid` });
+    p.appendChild(el('div', '', { id: `${PREFIX}_layout_inspector` }));
+    return p;
+  }
+
+  // v3.0 — Accessibility audit pane
+  function buildAuditPane() {
+    const p = el('div', 'insp-pane', { id: `${PREFIX}_pane_audit` });
+    const hdr = el('div', 'insp-audit-header');
+    const title = el('span', '', { text: 'Accessibility Audit' });
+    const runBtn = el('button', 'insp-copy-btn insp-audit-run', { text: 'Re-run' });
+    runBtn.style.width = 'auto';
+    runBtn.style.padding = '2px 10px';
+    hdr.append(title, runBtn);
+    p.appendChild(hdr);
+    p.appendChild(el('div', '', { id: `${PREFIX}_a11y_audit` }));
+    runBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (_current) renderA11yAuditSection(_current);
+    });
     return p;
   }
 
@@ -541,9 +1348,8 @@
 
     addListener(document.getElementById(`${PREFIX}_btn_theme`), 'click', (e) => {
       e.stopPropagation();
-      _isDark = !_isDark;
-      panel.classList.toggle('insp-dark',  _isDark);
-      panel.classList.toggle('insp-light', !_isDark);
+      _theme = _isDark ? 'light' : 'dark';
+      applyTheme(panel, _theme);
       document.getElementById(`${PREFIX}_btn_theme`).textContent = _isDark ? '☀' : '🌙';
     });
 
@@ -682,7 +1488,9 @@
     item.style.paddingLeft = (depth * 14 + 4) + 'px';
     if (n === selected) item.classList.add('insp-tree-selected');
 
-    const hasChildren = n.children && n.children.length > 0;
+    // Shadow root indicator
+    const hasShadow = n.shadowRoot != null;
+    const hasChildren = (n.children && n.children.length > 0) || hasShadow;
     const toggle = el('span', 'insp-tree-toggle');
     toggle.textContent = hasChildren ? '▾' : ' ';
     item.appendChild(toggle);
@@ -694,6 +1502,7 @@
       const cls = n.className.trim().split(/\s+/).filter(c => !c.startsWith(PREFIX) && c);
       if (cls.length) txt += '.' + cls.slice(0, 2).join('.');
     }
+    if (hasShadow) txt += ' ◎'; // shadow host indicator
     label.textContent = txt;
     item.appendChild(label);
     container.appendChild(item);
@@ -704,6 +1513,20 @@
     });
 
     if (hasChildren && depth < maxDepth) {
+      // Show shadow root children with indentation
+      if (hasShadow) {
+        const shadowLabel = el('div', 'insp-tree-item');
+        shadowLabel.style.paddingLeft = ((depth + 1) * 14 + 4) + 'px';
+        const sl = el('span', 'insp-tree-label');
+        sl.textContent = '#shadow-root';
+        sl.style.opacity = '0.5';
+        sl.style.fontStyle = 'italic';
+        shadowLabel.appendChild(sl);
+        container.appendChild(shadowLabel);
+        Array.from(n.shadowRoot.children || []).forEach(child => {
+          renderTreeNode(child, container, selected, depth + 2, maxDepth + 1);
+        });
+      }
       Array.from(n.children).forEach(child => {
         if (!child.id || !child.id.startsWith(PREFIX)) {
           renderTreeNode(child, container, selected, depth + 1, maxDepth);
@@ -855,7 +1678,7 @@
       }
     });
 
-    const fullSel = getFullSelector(node);
+    const fullSel = isInShadow(node) ? getShadowSelector(node) : generateStableSelector(node);
     const xpath   = getXPath(node);
     const qsStr   = `document.querySelector(\n  '${fullSel}'\n)`;
     const el3 = document.getElementById(`${PREFIX}_full_sel`);
@@ -905,6 +1728,11 @@
     }
 
     buildDOMTree(node);
+    renderEventsPane(node);
+    renderFrameworkPane(node);
+    renderLayoutInspectorPane(node, style);
+    renderA11yAuditSection(node);
+    if (_activeTab === 'mutations') renderMutationPane();
 
     const getAttr = (a) => node.getAttribute(a) || '—';
     setText(`${PREFIX}_a11y_role`,        node.getAttribute('role') || inferRole(node));
@@ -961,6 +1789,54 @@
 
   // ── GLOBAL EVENTS ──
   function attachGlobalListeners() {
+    // v2.4 — Mobile / Touch support
+    addListener(document, 'touchstart', (e) => {
+      if (!_enabled) return;
+      const touch = e.touches[0];
+      _touchStartX = touch.clientX;
+      _touchStartY = touch.clientY;
+    }, { passive: true });
+
+    addListener(document, 'touchmove', (e) => {
+      if (!_enabled || _pinned) return;
+      const touch = e.touches[0];
+      const node  = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (!node || isInspectorNode(node)) return;
+      _mouseX = touch.clientX; _mouseY = touch.clientY;
+      _pendingNode = node;
+      if (_hoverTimer) clearTimeout(_hoverTimer);
+      _hoverTimer = setTimeout(() => {
+        _hoverTimer = null;
+        if (!_enabled || !_pendingNode || _pinned) return;
+        const n = _pendingNode;
+        if (_current !== n) {
+          _current = n;
+          clearLayers();
+          const panel = document.getElementById(`${PREFIX}_panel`);
+          if (panel) panel.style.display = 'none';
+          renderPanel(n);
+        }
+      }, HOVER_DEBOUNCE);
+    }, { passive: true });
+
+    addListener(document, 'touchend', (e) => {
+      if (!_enabled) return;
+      const touch = e.changedTouches[0];
+      const dx = Math.abs(touch.clientX - _touchStartX);
+      const dy = Math.abs(touch.clientY - _touchStartY);
+      // Only treat as a tap (not a scroll)
+      if (dx > 10 || dy > 10) return;
+      const node = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (!node || isInspectorNode(node)) return;
+      e.preventDefault();
+      if (_pinned === node) { _pinned = null; closePanel(); return; }
+      if (_hoverTimer) { clearTimeout(_hoverTimer); _hoverTimer = null; }
+      _current = node; _pinned = node;
+      renderPanel(node);
+      const btn = document.getElementById(`${PREFIX}_btn_pin`);
+      if (btn) btn.style.opacity = '1';
+    }, { passive: false });
+
     // #12 — requestAnimationFrame throttling for mousemove
     addListener(document, 'mousemove', (e) => {
       _mouseX = e.clientX; _mouseY = e.clientY;
@@ -1128,9 +2004,11 @@
     if (options === null || options === undefined || typeof options === 'boolean' || typeof options === 'function') {
       enabled = options;
     } else {
-      const { enabled: e, ...rest } = options;
+      const { enabled: e, theme, ...rest } = options;
       enabled = (e === undefined) ? true : e;
       _cfg = { ...DEFAULTS, ...rest };
+      // v2.4 — theme system
+      if (theme !== undefined) _theme = theme;
     }
 
     const active = (typeof enabled === 'function') ? enabled() : Boolean(enabled);
@@ -1142,6 +2020,7 @@
     injectCSS();
     buildPanel();
     attachGlobalListeners();
+    startMutationObserver(); // v2.4
   }
 
   function enable()  { if (!isBrowser()) return; if (!_mounted) { init(true); return; } _enabled = true; }
@@ -1151,7 +2030,8 @@
     if (!isBrowser()) return;
     closePanel();
     removeAllListeners();
-    [`${PREFIX}_panel`, `${PREFIX}_tooltip`, `${PREFIX}_styles`]
+    stopMutationObserver(); // v2.4
+    [`${PREFIX}_panel`, `${PREFIX}_tooltip`, `${PREFIX}_styles`, `${PREFIX}_custom_theme`]
       .forEach(id => { const n = document.getElementById(id); if (n) n.parentNode.removeChild(n); });
     _mounted = false; _enabled = false;
   }
@@ -1166,7 +2046,7 @@
     _handlers[name] = (_handlers[name] || []).filter(h => h !== fn);
   }
 
-  function exportData() {
+  function exportData(format) {
     if (!isBrowser() || !_current) return null;
     const node  = _current;
     const rect  = node.getBoundingClientRect();
@@ -1175,8 +2055,8 @@
     Array.from(node.attributes).forEach(a => { attrs[a.name] = a.value; });
     const styles = {};
     Array.from(style).forEach(p => { styles[p] = style.getPropertyValue(p); });
-    return {
-      selector:  getFullSelector(node),
+    const data = {
+      selector:  isInShadow(node) ? getShadowSelector(node) : generateStableSelector(node),
       xpath:     getXPath(node),
       tagName:   node.tagName.toLowerCase(),
       width:     Math.round(rect.width),
@@ -1184,12 +2064,173 @@
       attributes: attrs,
       styles,
       a11y: {
-        role:          node.getAttribute('role') || inferRole(node),
+        role:           node.getAttribute('role') || inferRole(node),
         accessibleName: getAccessibleName(node),
-        focusable:     isFocusable(node),
+        focusable:      isFocusable(node),
       },
+    };
+    if (format === 'html')     return exportAsHTML(data);
+    if (format === 'markdown') return exportAsMarkdown(data);
+    if (format === 'yaml')     return exportAsYAML(data);
+    return data; // default: JSON object
+  }
+
+  // v2.4 — setTheme: change theme at runtime
+  function setTheme(theme) {
+    _theme = theme;
+    const panel = document.getElementById(`${PREFIX}_panel`);
+    applyTheme(panel, theme);
+  }
+
+  // v2.4 — patchAddEventListener: monkey-patches a target's addEventListener
+  // so the inspector can track all registered listeners on that target.
+  // Call once per element you want full tracking for.
+  function patchAddEventListener(target) {
+    if (!target || target[`__insp_patched`]) return;
+    target[`__insp_patched`] = true;
+    const original = target.addEventListener.bind(target);
+    const originalRemove = target.removeEventListener.bind(target);
+
+    target.addEventListener = function(type, fn, opts) {
+      if (_listenerRegistry) {
+        if (!_listenerRegistry.has(target)) _listenerRegistry.set(target, {});
+        const map = _listenerRegistry.get(target);
+        if (!map[type]) map[type] = [];
+        if (!map[type].includes(fn)) map[type].push(fn);
+      }
+      return original(type, fn, opts);
+    };
+
+    target.removeEventListener = function(type, fn, opts) {
+      if (_listenerRegistry && _listenerRegistry.has(target)) {
+        const map = _listenerRegistry.get(target);
+        if (map[type]) map[type] = map[type].filter(h => h !== fn);
+      }
+      return originalRemove(type, fn, opts);
     };
   }
 
-  return { init, enable, disable, destroy, on, off, export: exportData };
+  // v2.4 — clearMutations: empties the mutation history log
+  function clearMutations() {
+    _mutationHistory = [];
+    if (_activeTab === 'mutations') renderMutationPane();
+  }
+
+  // v3.0 — detectFramework: public wrapper for programmatic use
+  function detectFramework(node) {
+    if (!node || node.nodeType !== 1) return null;
+    const react   = detectReact(node);
+    const vue     = detectVue(node);
+    const angular = detectAngular(node);
+    if (react)   return { framework: 'react',   name: react.name,   hooks:  react.hooks };
+    if (vue)     return { framework: 'vue',     name: vue.name,     props:  vue.props,   version: vue.version };
+    if (angular) return { framework: 'angular', name: angular.name, inputs: angular.inputs, version: angular.version };
+    return null;
+  }
+
+  // v3.0 — audit: run accessibility audit on any element (or current)
+  function audit(node) {
+    const target = node || _current;
+    if (!target) return [];
+    return runA11yAudit(target);
+  }
+
+  // v3.0 — Remote Debugging stub
+  // Full implementation requires a WebSocket relay server.
+  // This stub provides the API surface; wire `_remoteWs` to your relay.
+  let _remoteWs   = null;
+  let _remoteUrl  = null;
+  let _sessionId  = null;
+
+  function connect(url) {
+    if (!isBrowser()) return Promise.reject(new Error('SSR'));
+    _remoteUrl = url;
+    return new Promise((resolve, reject) => {
+      try {
+        _remoteWs = new WebSocket(url);
+        _remoteWs.onopen = () => {
+          _remoteWs.send(JSON.stringify({ type: 'inspector:connect', version: '3.0.0' }));
+          resolve({ connected: true, url });
+        };
+        _remoteWs.onmessage = (e) => {
+          try {
+            const msg = JSON.parse(e.data);
+            emit('remote:message', msg);
+            if (msg.type === 'inspector:select' && msg.selector) {
+              const node = document.querySelector(msg.selector);
+              if (node) { _pinned = node; _current = node; renderPanel(node); }
+            }
+          } catch (_) {}
+        };
+        _remoteWs.onerror  = (err) => { emit('remote:error', err); reject(err); };
+        _remoteWs.onclose  = ()    => { _remoteWs = null; emit('remote:disconnect', {}); };
+      } catch (err) { reject(err); }
+    });
+  }
+
+  function disconnect() {
+    if (_remoteWs) { _remoteWs.close(); _remoteWs = null; }
+  }
+
+  // v3.0 — Collaboration stub
+  // Share an inspection session by generating a session ID.
+  // A real implementation syncs state via a relay (e.g. WebSocket or BroadcastChannel).
+  const _collab = {
+    sessionId:   null,
+    participants: 0,
+    channel:     null,
+  };
+
+  function share() {
+    if (!isBrowser()) return null;
+    // Generate a short human-readable session ID
+    const id = Math.random().toString(36).slice(2,5).toUpperCase() + '-' +
+               Math.random().toString(36).slice(2,5).toUpperCase() + '-' +
+               Math.random().toString(36).slice(2,5).toUpperCase();
+    _collab.sessionId = id;
+
+    // Use BroadcastChannel for same-origin tab collaboration
+    if (typeof BroadcastChannel !== 'undefined') {
+      _collab.channel = new BroadcastChannel(`dom-inspector:${id}`);
+      _collab.channel.onmessage = (e) => {
+        const msg = e.data;
+        emit('collab:message', msg);
+        if (msg.type === 'select' && msg.selector) {
+          const node = document.querySelector(msg.selector);
+          if (node) { _pinned = node; _current = node; renderPanel(node); }
+        }
+      };
+      // Broadcast current selection when it changes
+      const origEmit = emit;
+      // Broadcast inspect events to collaborators
+    }
+
+    emit('collab:start', { sessionId: id });
+    return id;
+  }
+
+  function joinSession(sessionId) {
+    if (!isBrowser() || !sessionId) return false;
+    _collab.sessionId = sessionId;
+    if (typeof BroadcastChannel !== 'undefined') {
+      _collab.channel = new BroadcastChannel(`dom-inspector:${sessionId}`);
+      _collab.channel.onmessage = (e) => {
+        const msg = e.data;
+        emit('collab:message', msg);
+        if (msg.type === 'select' && msg.selector) {
+          const node = document.querySelector(msg.selector);
+          if (node) { _pinned = node; _current = node; renderPanel(node); }
+        }
+      };
+    }
+    emit('collab:join', { sessionId });
+    return true;
+  }
+
+  return {
+    init, enable, disable, destroy,
+    on, off,
+    export: exportData,
+    generateStableSelector,
+  };
 }));
