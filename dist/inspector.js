@@ -1930,26 +1930,21 @@ td:first-child{color:#6c7086;width:40%}.sel{background:#252535;padding:6px 10px;
       }
     });
 
-    // #2, #8 — scroll & resize: recalculate overlay position for pinned element
+    // #2, #8 — scroll & resize: recalculate overlay position
     const _onScrollResize = () => {
       const panel = document.getElementById(`${PREFIX}_panel`);
       if (!panel || panel.style.display !== 'flex') return;
       if (!_enabled) return;
+      if (!_current) return;
 
-      // Bug 1 fix: hover mode (not pinned) — layers are viewport-fixed but element
-      // has scrolled away, so clear them immediately to avoid stale overlay.
-      if (!_pinned) {
-        clearLayers();
-        return;
-      }
-
-      // #12 — use rAF for scroll/resize too
+      // Both hover and pinned: recalculate layers to follow the element
       if (_rafId) return;
       _rafId = requestAnimationFrame(() => {
         _rafId = null;
-        if (!_pinned || !_enabled) return;
-        const rect  = _pinned.getBoundingClientRect();
-        const style = getComputedStyle(_pinned);
+        if (!_current || !_enabled) return;
+        const node  = _current;
+        const rect  = node.getBoundingClientRect();
+        const style = getComputedStyle(node);
         const m  = { t:parseFloat(style.marginTop),       l:parseFloat(style.marginLeft),
                      r:parseFloat(style.marginRight),      b:parseFloat(style.marginBottom) };
         const bo = { t:parseFloat(style.borderTopWidth),  l:parseFloat(style.borderLeftWidth),
@@ -1964,7 +1959,6 @@ td:first-child{color:#6c7086;width:40%}.sel{background:#252535;padding:6px 10px;
           rect.width-bo.l-bo.r-pa.l-pa.r, rect.height-bo.t-bo.b-pa.t-pa.b, 'content');
         makeDimLabel(rect.left, rect.top - 22,
           `${Math.round(rect.width)} × ${parseFloat(rect.height).toFixed(1)}`);
-        // Panel stays in place during scroll — only overlays update
       });
     };
     // Prevent panel's own scroll from triggering overlay recalculation.
