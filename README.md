@@ -12,7 +12,7 @@ Lightweight, framework-agnostic DOM Inspector inspired by browser DevTools.
 
 ---
 
-🚀 [Live Demo](https://armvs.github.io/dom-inspector/) · 📦 [npm](https://www.npmjs.com/package/@armvs/dom-inspector) · 📖 [Documentation](#api) · ⭐ [GitHub](https://github.com/armvs/dom-inspector)
+🚀 [Live Demo](https://sayataleqsanyan.github.io/dom-inspector/) · 📦 [npm](https://www.npmjs.com/package/@armvs/dom-inspector) · 📖 [Documentation](#api) · ⭐ [GitHub](https://github.com/sayataleqsanyan/dom-inspector)
 
 ---
 

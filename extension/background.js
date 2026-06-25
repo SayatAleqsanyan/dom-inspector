@@ -5,7 +5,9 @@
 // Install: open the options page or show a welcome notification
 chrome.runtime.onInstalled.addListener(({ reason }) => {
   if (reason === 'install') {
-    chrome.tabs.create({ url: 'https://github.com/armvs/dom-inspector#readme' });
+    chrome.tabs.create({
+        url: "https://github.com/sayataleqsanyan/dom-inspector#readme",
+    });
   }
 });
 
