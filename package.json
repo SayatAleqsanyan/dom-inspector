@@ -1,6 +1,6 @@
 {
     "name": "@armvs/dom-inspector",
-    "version": "4.0.0",
+    "version": "4.0.2",
     "description": "Lightweight DOM inspector inspired by browser DevTools. Inspect elements, visualize box model, view selectors and debug layouts directly on any webpage.",
     "main": "dist/inspector.min.js",
     "types": "dist/inspector.d.ts",
@@ -52,10 +52,10 @@
     "module": "dist/inspector.esm.js",
     "repository": {
         "type": "git",
-        "url": "https://github.com/armvs/dom-inspector.git"
+        "url": "git+https://github.com/armvs/dom-inspector.git"
     },
+    "homepage": "https://github.com/armvs/dom-inspector#readme",
     "bugs": {
         "url": "https://github.com/armvs/dom-inspector/issues"
-    },
-    "homepage": "https://github.com/armvs/dom-inspector#readme"
+    }
 }
