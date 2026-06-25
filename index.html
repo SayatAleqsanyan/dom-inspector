@@ -83,24 +83,33 @@
                 font-size: 17px;
                 color: var(--muted);
                 max-width: 520px;
-                margin-bottom: 36px;
+                margin-bottom: 28px;
             }
 
-            .hero-chips {
+            /* ── feature stats ── */
+            .feature-stats {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 8px;
-                margin-bottom: 36px;
+                gap: 10px 24px;
+                margin-bottom: 32px;
+                padding: 16px 20px;
+                background: var(--surface);
+                border: 1px solid var(--border2);
+                border-radius: 10px;
             }
 
-            .chip {
+            .feat-stat {
                 font-family: var(--mono);
-                font-size: 11px;
-                padding: 4px 10px;
-                border-radius: 4px;
-                border: 1px solid var(--border2);
+                font-size: 12px;
                 color: var(--muted);
-                background: var(--surface);
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .feat-stat .check {
+                color: var(--green);
+                font-size: 13px;
             }
 
             .hero-install {
@@ -117,6 +126,7 @@
                 cursor: pointer;
                 transition: border-color 0.15s;
                 user-select: all;
+                margin-bottom: 28px;
             }
 
             .hero-install:hover {
@@ -131,6 +141,48 @@
             }
             .copy-icon:hover {
                 color: var(--accent);
+            }
+
+            /* ── api controls ── */
+            .api-controls {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+
+            .api-btn {
+                padding: 7px 16px;
+                border-radius: 6px;
+                border: 1px solid var(--border2);
+                cursor: pointer;
+                font-size: 12px;
+                font-weight: 500;
+                font-family: var(--mono);
+                transition: all 0.15s;
+                background: var(--surface);
+            }
+
+            .api-btn:hover { border-color: var(--accent); }
+
+            .api-btn-enable { color: var(--green); }
+            .api-btn-enable:hover { background: #0f1f18; border-color: var(--green); }
+
+            .api-btn-disable { color: var(--yellow); }
+            .api-btn-disable:hover { background: #1e1810; border-color: var(--yellow); }
+
+            .api-btn-destroy { color: var(--red); }
+            .api-btn-destroy:hover { background: #2e1020; border-color: var(--red); }
+
+            .api-btn-reinit { color: var(--blue); }
+            .api-btn-reinit:hover { background: #0f1828; border-color: var(--blue); }
+
+            .api-label {
+                font-family: var(--mono);
+                font-size: 10px;
+                color: var(--muted);
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                margin-bottom: 8px;
             }
 
             /* ── hint banner ── */
@@ -170,13 +222,8 @@
             }
 
             @keyframes pulse {
-                0%,
-                100% {
-                    opacity: 1;
-                }
-                50% {
-                    opacity: 0.4;
-                }
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.4; }
             }
 
             /* ── demo grid ── */
@@ -253,26 +300,10 @@
                 border: 1px solid;
             }
 
-            .tag-purple {
-                color: var(--accent);
-                border-color: #4a3b6a;
-                background: #1e1530;
-            }
-            .tag-green {
-                color: var(--green);
-                border-color: #2d4a3a;
-                background: #0f1f18;
-            }
-            .tag-blue {
-                color: var(--blue);
-                border-color: #2a3a5c;
-                background: #0f1828;
-            }
-            .tag-yellow {
-                color: var(--yellow);
-                border-color: #4a3a20;
-                background: #1e1810;
-            }
+            .tag-purple { color: var(--accent); border-color: #4a3b6a; background: #1e1530; }
+            .tag-green  { color: var(--green);  border-color: #2d4a3a; background: #0f1f18; }
+            .tag-blue   { color: var(--blue);   border-color: #2a3a5c; background: #0f1828; }
+            .tag-yellow { color: var(--yellow); border-color: #4a3a20; background: #1e1810; }
 
             /* ── flex demo ── */
             .flex-demo {
@@ -295,24 +326,10 @@
                 font-weight: 600;
             }
 
-            .fi-1 {
-                background: #2a1f3d;
-                color: var(--accent);
-            }
-            .fi-2 {
-                background: #1a2e2a;
-                color: var(--green);
-            }
-            .fi-3 {
-                background: #1a2040;
-                color: var(--blue);
-                flex-grow: 1;
-                text-align: center;
-            }
-            .fi-4 {
-                background: #2e1f20;
-                color: var(--red);
-            }
+            .fi-1 { background: #2a1f3d; color: var(--accent); }
+            .fi-2 { background: #1a2e2a; color: var(--green); }
+            .fi-3 { background: #1a2040; color: var(--blue); flex-grow: 1; text-align: center; }
+            .fi-4 { background: #2e1f20; color: var(--red); }
 
             /* ── grid demo ── */
             .grid-demo {
@@ -334,16 +351,8 @@
                 text-align: center;
             }
 
-            .grid-cell.span2 {
-                grid-column: span 2;
-                color: var(--blue);
-                border-color: #2a3a5c;
-            }
-            .grid-cell.span3 {
-                grid-column: span 3;
-                color: var(--green);
-                border-color: #2d4a3a;
-            }
+            .grid-cell.span2 { grid-column: span 2; color: var(--blue); border-color: #2a3a5c; }
+            .grid-cell.span3 { grid-column: span 3; color: var(--green); border-color: #2d4a3a; }
 
             /* ── form ── */
             .form-row {
@@ -353,11 +362,7 @@
                 margin-bottom: 14px;
             }
 
-            .form-label {
-                font-size: 12px;
-                font-weight: 500;
-                color: var(--muted);
-            }
+            .form-label { font-size: 12px; font-weight: 500; color: var(--muted); }
 
             .form-input {
                 background: var(--bg);
@@ -371,10 +376,7 @@
                 transition: border-color 0.15s;
                 width: 100%;
             }
-
-            .form-input:focus {
-                border-color: var(--accent);
-            }
+            .form-input:focus { border-color: var(--accent); }
 
             .form-select {
                 background: var(--bg);
@@ -406,29 +408,13 @@
                 transition: opacity 0.15s;
             }
 
-            .btn:hover {
-                opacity: 0.85;
-            }
-            .btn-primary {
-                background: var(--accent);
-                color: #1e1530;
-            }
-            .btn-secondary {
-                background: var(--border2);
-                color: var(--text);
-            }
-            .btn-danger {
-                background: #3a1a20;
-                color: var(--red);
-                border: 1px solid #5a2a30;
-            }
+            .btn:hover { opacity: 0.85; }
+            .btn-primary   { background: var(--accent); color: #1e1530; }
+            .btn-secondary { background: var(--border2); color: var(--text); }
+            .btn-danger    { background: #3a1a20; color: var(--red); border: 1px solid #5a2a30; }
 
             /* ── typography ── */
-            .type-demo {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-            }
+            .type-demo { display: flex; flex-direction: column; gap: 8px; }
 
             .type-row {
                 display: flex;
@@ -437,10 +423,7 @@
                 padding: 6px 0;
                 border-bottom: 1px solid var(--border);
             }
-
-            .type-row:last-child {
-                border-bottom: none;
-            }
+            .type-row:last-child { border-bottom: none; }
 
             .type-label {
                 font-family: var(--mono);
@@ -450,11 +433,7 @@
             }
 
             /* ── stacking ── */
-            .stack-demo {
-                position: relative;
-                height: 90px;
-                margin-top: 10px;
-            }
+            .stack-demo { position: relative; height: 90px; margin-top: 10px; }
 
             .stack-layer {
                 position: absolute;
@@ -467,44 +446,12 @@
                 font-weight: 600;
             }
 
-            .sl-1 {
-                background: #1e1530;
-                border: 1px solid #4a3b6a;
-                color: var(--accent);
-                width: 80%;
-                height: 36px;
-                top: 0;
-                left: 0;
-                z-index: 1;
-            }
-            .sl-2 {
-                background: #0f1828;
-                border: 1px solid #2a3a5c;
-                color: var(--blue);
-                width: 75%;
-                height: 36px;
-                top: 28px;
-                left: 24px;
-                z-index: 2;
-            }
-            .sl-3 {
-                background: #0f1f18;
-                border: 1px solid #2d4a3a;
-                color: var(--green);
-                width: 70%;
-                height: 36px;
-                top: 56px;
-                left: 48px;
-                z-index: 3;
-            }
+            .sl-1 { background: #1e1530; border: 1px solid #4a3b6a; color: var(--accent); width: 80%; height: 36px; top: 0; left: 0; z-index: 1; }
+            .sl-2 { background: #0f1828; border: 1px solid #2a3a5c; color: var(--blue); width: 75%; height: 36px; top: 28px; left: 24px; z-index: 2; }
+            .sl-3 { background: #0f1f18; border: 1px solid #2d4a3a; color: var(--green); width: 70%; height: 36px; top: 56px; left: 48px; z-index: 3; }
 
             /* ── accessibility ── */
-            .a11y-demo {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-                margin-top: 4px;
-            }
+            .a11y-demo { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
 
             .a11y-item {
                 display: flex;
@@ -517,28 +464,13 @@
                 font-size: 13px;
             }
 
-            .a11y-dot {
-                width: 8px;
-                height: 8px;
-                border-radius: 50%;
-                flex-shrink: 0;
-            }
-            .a11y-ok {
-                background: var(--green);
-            }
-            .a11y-warn {
-                background: var(--yellow);
-            }
-            .a11y-err {
-                background: var(--red);
-            }
+            .a11y-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+            .a11y-ok   { background: var(--green); }
+            .a11y-warn { background: var(--yellow); }
+            .a11y-err  { background: var(--red); }
 
             /* ── mutations ── */
-            .mut-controls {
-                display: flex;
-                gap: 8px;
-                margin-bottom: 10px;
-            }
+            .mut-controls { display: flex; gap: 8px; margin-bottom: 10px; }
 
             #mut-target {
                 background: var(--bg);
@@ -550,6 +482,176 @@
                 color: var(--muted);
                 transition: background 0.2s;
             }
+
+            /* ── export demo ── */
+            .export-row {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+                margin-bottom: 12px;
+            }
+
+            .export-btn {
+                padding: 6px 14px;
+                border-radius: 6px;
+                border: 1px solid var(--border2);
+                background: var(--surface);
+                color: var(--text);
+                font-family: var(--mono);
+                font-size: 12px;
+                cursor: pointer;
+                transition: all 0.15s;
+            }
+
+            .export-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+            .export-output {
+                background: var(--bg);
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                padding: 12px;
+                font-family: var(--mono);
+                font-size: 11px;
+                color: var(--muted);
+                min-height: 60px;
+                max-height: 120px;
+                overflow-y: auto;
+                white-space: pre-wrap;
+                word-break: break-all;
+                line-height: 1.6;
+            }
+
+            /* ── event logger ── */
+            .event-log {
+                background: var(--bg);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                overflow: hidden;
+                margin-bottom: 48px;
+            }
+
+            .event-log-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 10px 14px;
+                border-bottom: 1px solid var(--border);
+                background: var(--surface);
+            }
+
+            .event-log-title {
+                font-family: var(--mono);
+                font-size: 11px;
+                color: var(--muted);
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .log-dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: var(--green);
+                box-shadow: 0 0 4px var(--green);
+                animation: pulse 2s ease-in-out infinite;
+            }
+
+            .log-clear {
+                font-family: var(--mono);
+                font-size: 11px;
+                color: var(--muted);
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 2px 8px;
+                border-radius: 4px;
+                transition: color 0.15s;
+            }
+            .log-clear:hover { color: var(--red); }
+
+            .event-log-body {
+                padding: 12px 14px;
+                min-height: 96px;
+                max-height: 140px;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .log-entry {
+                display: flex;
+                gap: 10px;
+                align-items: baseline;
+                font-family: var(--mono);
+                font-size: 12px;
+                animation: fadeIn 0.2s ease;
+            }
+
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(-4px); }
+                to   { opacity: 1; transform: translateY(0); }
+            }
+
+            .log-type {
+                padding: 1px 6px;
+                border-radius: 3px;
+                font-size: 10px;
+                font-weight: 600;
+                flex-shrink: 0;
+            }
+
+            .log-inspect { color: var(--blue); background: #0f1828; }
+            .log-copy    { color: var(--green); background: #0f1f18; }
+            .log-audit   { color: var(--yellow); background: #1e1810; }
+            .log-enable  { color: var(--accent); background: #1e1530; }
+            .log-disable { color: var(--muted); background: var(--border); }
+            .log-destroy { color: var(--red); background: #2e1020; }
+
+            .log-text { color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .log-empty { color: var(--border2); font-family: var(--mono); font-size: 12px; padding: 12px 0; }
+
+            /* ── comparison ── */
+            .comparison-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+                margin-bottom: 48px;
+            }
+
+            .cmp-card {
+                background: var(--surface);
+                border: 1px solid var(--border2);
+                border-radius: 10px;
+                overflow: hidden;
+            }
+
+            .cmp-header {
+                padding: 12px 16px;
+                border-bottom: 1px solid var(--border);
+                font-size: 13px;
+                font-weight: 600;
+            }
+
+            .cmp-devtools .cmp-header { color: var(--muted); background: #16161e; }
+            .cmp-dom     .cmp-header { color: var(--accent); background: #1a1530; }
+
+            .cmp-rows { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+
+            .cmp-row {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 12px;
+            }
+
+            .cmp-icon { font-size: 13px; flex-shrink: 0; width: 18px; }
+            .cmp-yes { color: var(--green); }
+            .cmp-no  { color: var(--red); }
+            .cmp-text { color: var(--muted); }
 
             /* ── code block ── */
             .code-card {
@@ -569,30 +671,13 @@
                 background: var(--bg);
             }
 
-            .code-title {
-                font-family: var(--mono);
-                font-size: 12px;
-                color: var(--muted);
-            }
+            .code-title { font-family: var(--mono); font-size: 12px; color: var(--muted); }
 
-            .code-dots {
-                display: flex;
-                gap: 6px;
-            }
-            .dot {
-                width: 10px;
-                height: 10px;
-                border-radius: 50%;
-            }
-            .dot-r {
-                background: #f38ba8;
-            }
-            .dot-y {
-                background: #f9e2af;
-            }
-            .dot-g {
-                background: #a6e3a1;
-            }
+            .code-dots { display: flex; gap: 6px; }
+            .dot { width: 10px; height: 10px; border-radius: 50%; }
+            .dot-r { background: #f38ba8; }
+            .dot-y { background: #f9e2af; }
+            .dot-g { background: #a6e3a1; }
 
             pre {
                 padding: 20px;
@@ -603,22 +688,11 @@
                 color: var(--text);
             }
 
-            .kw {
-                color: var(--accent);
-            }
-            .fn {
-                color: var(--blue);
-            }
-            .str {
-                color: var(--green);
-            }
-            .cm {
-                color: var(--muted);
-                font-style: italic;
-            }
-            .num {
-                color: var(--yellow);
-            }
+            .kw  { color: var(--accent); }
+            .fn  { color: var(--blue); }
+            .str { color: var(--green); }
+            .cm  { color: var(--muted); font-style: italic; }
+            .num { color: var(--yellow); }
 
             /* ── footer ── */
             .demo-footer {
@@ -629,31 +703,19 @@
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                flex-wrap: gap;
+                flex-wrap: wrap;
+                gap: 8px;
                 font-size: 12px;
                 color: var(--muted);
             }
 
-            .footer-link {
-                color: var(--accent);
-                text-decoration: none;
-            }
-            .footer-link:hover {
-                text-decoration: underline;
-            }
+            .footer-link { color: var(--accent); text-decoration: none; }
+            .footer-link:hover { text-decoration: underline; }
 
             /* ── scrollbar ── */
-            ::-webkit-scrollbar {
-                width: 6px;
-                height: 6px;
-            }
-            ::-webkit-scrollbar-track {
-                background: var(--bg);
-            }
-            ::-webkit-scrollbar-thumb {
-                background: var(--border2);
-                border-radius: 3px;
-            }
+            ::-webkit-scrollbar { width: 6px; height: 6px; }
+            ::-webkit-scrollbar-track { background: var(--bg); }
+            ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
         </style>
     </head>
     <body>
@@ -666,56 +728,73 @@
             </h1>
             <p class="hero-sub">
                 Hover over any element on this page while holding
-                <code
-                    style="
-                        font-family: var(--mono);
-                        color: var(--accent);
-                        font-size: 13px;
-                    "
-                    >Alt</code
-                >
+                <code style="font-family: var(--mono); color: var(--accent); font-size: 13px;">Alt</code>
                 to start inspecting. Box model, selectors, typography,
                 flex/grid, accessibility — all in one floating panel.
             </p>
-            <div class="hero-chips">
-                <span class="chip">Zero dependencies</span>
-                <span class="chip">TypeScript types</span>
-                <span class="chip">ESM + CJS</span>
-                <span class="chip">Chrome Extension</span>
-                <span class="chip">Shadow DOM</span>
-                <span class="chip">Framework detection</span>
+
+            <!-- Feature Statistics -->
+            <div class="feature-stats">
+                <div class="feat-stat"><span class="check">✓</span> Zero Dependencies</div>
+                <div class="feat-stat"><span class="check">✓</span> TypeScript</div>
+                <div class="feat-stat"><span class="check">✓</span> 4 Themes</div>
+                <div class="feat-stat"><span class="check">✓</span> 15+ Inspector Tabs</div>
+                <div class="feat-stat"><span class="check">✓</span> Playwright Tested</div>
+                <div class="feat-stat"><span class="check">✓</span> Shadow DOM</div>
+                <div class="feat-stat"><span class="check">✓</span> Framework Detection</div>
+                <div class="feat-stat"><span class="check">✓</span> Chrome Extension</div>
+                <div class="feat-stat"><span class="check">✓</span> WCAG Auditing</div>
             </div>
+
             <div class="hero-install" title="Click to copy">
                 <span>$</span>
                 <span id="install-cmd">npm install @armvs/dom-inspector</span>
                 <span class="copy-icon" id="copy-btn" title="Copy">⧉</span>
+            </div>
+
+            <!-- Live API Controls -->
+            <div class="api-label">Live API Controls</div>
+            <div class="api-controls">
+                <button class="api-btn api-btn-enable" id="api-enable" title="DOMInspector.enable()">enable()</button>
+                <button class="api-btn api-btn-disable" id="api-disable" title="DOMInspector.disable()">disable()</button>
+                <button class="api-btn api-btn-destroy" id="api-destroy" title="DOMInspector.destroy()">destroy()</button>
+                <button class="api-btn api-btn-reinit" id="api-reinit" title="DOMInspector.init(...)">reinit()</button>
             </div>
         </div>
 
         <!-- ── HINT ──────────────────────────────────────────────────────────── -->
         <div class="hint-banner">
             <div class="hint-dot"></div>
-            <span
-                >Inspector is
-                <strong style="color: var(--green)">active</strong> — hold</span
-            >
+            <span>Inspector is <strong style="color: var(--green)">active</strong> — hold</span>
             <span class="key">Alt</span>
-            <span
-                >and hover over any element below to inspect it. Click to pin
-                the panel.</span
-            >
+            <span>and hover over any element below to inspect it. Click to pin the panel.</span>
         </div>
 
         <!-- ── DEMO AREA ─────────────────────────────────────────────────────── -->
         <div class="demo-area">
+
+            <!-- Event Logger -->
+            <div class="section-label">Live Event Log</div>
+            <div class="event-log" id="event-log-panel">
+                <div class="event-log-header">
+                    <div class="event-log-title">
+                        <div class="log-dot"></div>
+                        Inspector Events
+                    </div>
+                    <button class="log-clear" id="log-clear-btn">Clear</button>
+                </div>
+                <div class="event-log-body" id="event-log-body">
+                    <div class="log-empty" id="log-empty-state">Waiting for events — hold Alt and hover an element…</div>
+                </div>
+            </div>
+
             <!-- Cards -->
             <div class="section-label">Components</div>
             <div class="demo-grid">
                 <div class="card" id="card-tags">
                     <div class="card-title">Tag Cloud</div>
                     <div class="card-body">
-                        Hover over individual tags to inspect their computed
-                        styles.
+                        Hover over individual tags to inspect their computed styles.
                     </div>
                     <div class="tag-row">
                         <span class="tag tag-purple">inspector</span>
@@ -732,21 +811,11 @@
                     <div class="card-title">Form Elements</div>
                     <div class="form-row">
                         <label class="form-label" for="demo-name">Name</label>
-                        <input
-                            class="form-input"
-                            id="demo-name"
-                            type="text"
-                            placeholder="Inspect me"
-                            aria-label="Name"
-                        />
+                        <input class="form-input" id="demo-name" type="text" placeholder="Inspect me" aria-label="Name" />
                     </div>
                     <div class="form-row" style="margin-bottom: 10px">
                         <label class="form-label" for="demo-role">Role</label>
-                        <select
-                            class="form-select"
-                            id="demo-role"
-                            aria-label="Role"
-                        >
+                        <select class="form-select" id="demo-role" aria-label="Role">
                             <option>Frontend developer</option>
                             <option>Designer</option>
                             <option>Full-stack</option>
@@ -761,33 +830,13 @@
                 <div class="card" id="card-buttons">
                     <div class="card-title">Button States</div>
                     <div class="card-body">
-                        Each button has distinct computed styles — inspect to
-                        compare.
+                        Each button has distinct computed styles — inspect to compare.
                     </div>
-                    <div
-                        class="btn-row"
-                        style="flex-direction: column; gap: 8px"
-                    >
-                        <button class="btn btn-primary" style="width: 100%">
-                            Primary action
-                        </button>
-                        <button class="btn btn-secondary" style="width: 100%">
-                            Secondary
-                        </button>
-                        <button class="btn btn-danger" style="width: 100%">
-                            Destructive
-                        </button>
-                        <button
-                            class="btn btn-secondary"
-                            style="
-                                width: 100%;
-                                opacity: 0.4;
-                                cursor: not-allowed;
-                            "
-                            disabled
-                        >
-                            Disabled
-                        </button>
+                    <div class="btn-row" style="flex-direction: column; gap: 8px">
+                        <button class="btn btn-primary" style="width: 100%">Primary action</button>
+                        <button class="btn btn-secondary" style="width: 100%">Secondary</button>
+                        <button class="btn btn-danger" style="width: 100%">Destructive</button>
+                        <button class="btn btn-secondary" style="width: 100%; opacity: 0.4; cursor: not-allowed;" disabled>Disabled</button>
                     </div>
                 </div>
             </div>
@@ -798,8 +847,7 @@
                 <div class="card" id="card-flex">
                     <div class="card-title">Flex Container</div>
                     <div class="card-body">
-                        Inspect the container to see flex properties, or a child
-                        to see item props.
+                        Inspect the container to see flex properties, or a child to see item props.
                     </div>
                     <div class="flex-demo" id="flex-container">
                         <div class="flex-item fi-1">flex-start</div>
@@ -812,14 +860,7 @@
                 <div class="card" id="card-grid">
                     <div class="card-title">Grid Container</div>
                     <div class="card-body">
-                        <code
-                            style="
-                                font-family: var(--mono);
-                                font-size: 11px;
-                                color: var(--accent);
-                            "
-                            >grid-template-columns: 1fr 2fr 1fr</code
-                        >
+                        <code style="font-family: var(--mono); font-size: 11px; color: var(--accent);">grid-template-columns: 1fr 2fr 1fr</code>
                     </div>
                     <div class="grid-demo" id="grid-container">
                         <div class="grid-cell">1fr</div>
@@ -834,8 +875,7 @@
                 <div class="card" id="card-stack">
                     <div class="card-title">Stacking Context</div>
                     <div class="card-body">
-                        Three layers with different z-index values. Inspect each
-                        for stacking info.
+                        Three layers with different z-index values. Inspect each for stacking info.
                     </div>
                     <div class="stack-demo">
                         <div class="stack-layer sl-1">z-index: 1</div>
@@ -847,58 +887,29 @@
 
             <!-- Typography -->
             <div class="section-label">Typography</div>
-            <div
-                class="demo-grid"
-                style="grid-template-columns: 1fr 1fr; margin-bottom: 48px"
-            >
+            <div class="demo-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 48px">
                 <div class="card" id="card-typo">
                     <div class="card-title">Type Scale</div>
                     <div class="type-demo">
                         <div class="type-row">
                             <span class="type-label">52px 600</span>
-                            <span
-                                style="
-                                    font-size: 28px;
-                                    font-weight: 600;
-                                    line-height: 1;
-                                "
-                                >Aa</span
-                            >
+                            <span style="font-size: 28px; font-weight: 600; line-height: 1;">Aa</span>
                         </div>
                         <div class="type-row">
                             <span class="type-label">32px 600</span>
-                            <span style="font-size: 20px; font-weight: 600"
-                                >Section heading</span
-                            >
+                            <span style="font-size: 20px; font-weight: 600;">Section heading</span>
                         </div>
                         <div class="type-row">
                             <span class="type-label">15px 400</span>
-                            <span style="font-size: 15px; color: var(--muted)"
-                                >Body text reads at this size</span
-                            >
+                            <span style="font-size: 15px; color: var(--muted);">Body text reads at this size</span>
                         </div>
                         <div class="type-row">
                             <span class="type-label">mono 13px</span>
-                            <span
-                                style="
-                                    font-family: var(--mono);
-                                    font-size: 13px;
-                                    color: var(--green);
-                                "
-                                >code.snippet()</span
-                            >
+                            <span style="font-family: var(--mono); font-size: 13px; color: var(--green);">code.snippet()</span>
                         </div>
                         <div class="type-row">
                             <span class="type-label">label 11px</span>
-                            <span
-                                style="
-                                    font-size: 11px;
-                                    text-transform: uppercase;
-                                    letter-spacing: 0.1em;
-                                    color: var(--muted);
-                                "
-                                >Section label</span
-                            >
+                            <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted);">Section label</span>
                         </div>
                     </div>
                 </div>
@@ -908,95 +919,82 @@
                     <div class="a11y-demo">
                         <div class="a11y-item">
                             <div class="a11y-dot a11y-ok"></div>
-                            <img
-                                src="data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='20' height='20' rx='4' fill='%23cba6f7'/%3E%3C/svg%3E"
-                                alt="Purple square icon"
-                                style="border-radius: 3px"
-                            />
-                            <span style="font-size: 12px"
-                                >img with alt attribute ✓</span
-                            >
+                            <img src="data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='20' height='20' rx='4' fill='%23cba6f7'/%3E%3C/svg%3E" alt="Purple square icon" style="border-radius: 3px" />
+                            <span style="font-size: 12px;">img with alt attribute ✓</span>
                         </div>
                         <div class="a11y-item">
                             <div class="a11y-dot a11y-ok"></div>
-                            <button
-                                class="btn btn-secondary"
-                                style="padding: 4px 10px; font-size: 12px"
-                                aria-label="Close dialog"
-                            >
-                                ✕
-                            </button>
-                            <span style="font-size: 12px"
-                                >button with aria-label ✓</span
-                            >
+                            <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px" aria-label="Close dialog">✕</button>
+                            <span style="font-size: 12px;">button with aria-label ✓</span>
                         </div>
                         <div class="a11y-item">
                             <div class="a11y-dot a11y-warn"></div>
-                            <button
-                                class="btn btn-danger"
-                                style="padding: 4px 10px; font-size: 12px"
-                                tabindex="2"
-                            >
-                                tabindex=2
-                            </button>
-                            <span style="font-size: 12px"
-                                >positive tabindex ⚠</span
-                            >
+                            <button class="btn btn-danger" style="padding: 4px 10px; font-size: 12px" tabindex="2">tabindex=2</button>
+                            <span style="font-size: 12px;">positive tabindex ⚠</span>
                         </div>
                         <div class="a11y-item">
                             <div class="a11y-dot a11y-err"></div>
-                            <button
-                                class="btn btn-secondary"
-                                style="padding: 4px 10px; font-size: 12px"
-                            ></button>
-                            <span style="font-size: 12px"
-                                >button no name ✕</span
-                            >
+                            <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px"></button>
+                            <span style="font-size: 12px;">button no name ✕</span>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Export Demo -->
+            <div class="section-label">Export API</div>
+            <div class="card" style="margin-bottom: 48px">
+                <div class="card-title" style="margin-bottom: 6px;">Export Inspection Data</div>
+                <div class="card-body">First inspect an element (Alt + hover), then export its data in any format.</div>
+                <div class="export-row">
+                    <button class="export-btn" id="export-json">Export JSON</button>
+                    <button class="export-btn" id="export-markdown">Export Markdown</button>
+                    <button class="export-btn" id="export-html">Export HTML</button>
+                    <button class="export-btn" id="export-yaml">Export YAML</button>
+                </div>
+                <div class="export-output" id="export-output">Inspect an element first, then click an export button above…</div>
+            </div>
+
             <!-- Mutations -->
             <div class="section-label">Live DOM Mutations</div>
             <div class="card" style="margin-bottom: 48px" id="card-mutations">
-                <div class="card-title" style="margin-bottom: 12px">
-                    Mutation Observer
-                </div>
+                <div class="card-title" style="margin-bottom: 12px;">Mutation Observer</div>
                 <div class="mut-controls">
-                    <button
-                        class="btn btn-primary"
-                        id="mut-add"
-                        style="font-size: 12px; padding: 6px 14px"
-                    >
-                        Add element
-                    </button>
-                    <button
-                        class="btn btn-secondary"
-                        id="mut-attr"
-                        style="font-size: 12px; padding: 6px 14px"
-                    >
-                        Toggle class
-                    </button>
-                    <button
-                        class="btn btn-secondary"
-                        id="mut-text"
-                        style="font-size: 12px; padding: 6px 14px"
-                    >
-                        Change text
-                    </button>
-                    <button
-                        class="btn btn-danger"
-                        id="mut-remove"
-                        style="font-size: 12px; padding: 6px 14px"
-                    >
-                        Remove last
-                    </button>
+                    <button class="btn btn-primary" id="mut-add" style="font-size: 12px; padding: 6px 14px;">Add element</button>
+                    <button class="btn btn-secondary" id="mut-attr" style="font-size: 12px; padding: 6px 14px;">Toggle class</button>
+                    <button class="btn btn-secondary" id="mut-text" style="font-size: 12px; padding: 6px 14px;">Change text</button>
+                    <button class="btn btn-danger" id="mut-remove" style="font-size: 12px; padding: 6px 14px;">Remove last</button>
                 </div>
                 <div id="mut-target">
-                    Watching for mutations… inspect this element and switch to
-                    the
+                    Watching for mutations… inspect this element and switch to the
                     <strong style="color: var(--accent)">Mutations</strong> tab.
+                </div>
+            </div>
+
+            <!-- Comparison -->
+            <div class="section-label">Why DOM Inspector?</div>
+            <div class="comparison-grid" style="margin-bottom: 48px">
+                <div class="cmp-card cmp-devtools">
+                    <div class="cmp-header">Chrome DevTools</div>
+                    <div class="cmp-rows">
+                        <div class="cmp-row"><span class="cmp-icon cmp-no">✕</span><span class="cmp-text">Production safe</span></div>
+                        <div class="cmp-row"><span class="cmp-icon cmp-no">✕</span><span class="cmp-text">Accessible to end users</span></div>
+                        <div class="cmp-row"><span class="cmp-icon cmp-no">✕</span><span class="cmp-text">Admin-only activation</span></div>
+                        <div class="cmp-row"><span class="cmp-icon cmp-no">✕</span><span class="cmp-text">Embeds in your app</span></div>
+                        <div class="cmp-row"><span class="cmp-icon cmp-no">✕</span><span class="cmp-text">Custom trigger key</span></div>
+                        <div class="cmp-row"><span class="cmp-icon cmp-yes">✓</span><span class="cmp-text">Framework-aware inspection</span></div>
+                    </div>
+                </div>
+                <div class="cmp-card cmp-dom">
+                    <div class="cmp-header">@armvs/dom-inspector</div>
+                    <div class="cmp-rows">
+                        <div class="cmp-row"><span class="cmp-icon cmp-yes">✓</span><span class="cmp-text">Production safe</span></div>
+                        <div class="cmp-row"><span class="cmp-icon cmp-yes">✓</span><span class="cmp-text">Accessible to end users</span></div>
+                        <div class="cmp-row"><span class="cmp-icon cmp-yes">✓</span><span class="cmp-text">Admin-only activation</span></div>
+                        <div class="cmp-row"><span class="cmp-icon cmp-yes">✓</span><span class="cmp-text">Embeds in your app</span></div>
+                        <div class="cmp-row"><span class="cmp-icon cmp-yes">✓</span><span class="cmp-text">Custom trigger key</span></div>
+                        <div class="cmp-row"><span class="cmp-icon cmp-yes">✓</span><span class="cmp-text">Framework-aware inspection</span></div>
+                    </div>
                 </div>
             </div>
 
@@ -1042,13 +1040,10 @@
         <!-- ── FOOTER ─────────────────────────────────────────────────────────── -->
         <div class="demo-footer">
             <span>@armvs/dom-inspector v4.0.0</span>
-            <span>
-                <a
-                    class="footer-link"
-                    href="https://www.npmjs.com/package/@armvs/dom-inspector"
-                    target="_blank"
-                    >npm</a
-                >
+            <span style="display:flex; gap:16px; align-items:center;">
+                <a class="footer-link" href="https://www.npmjs.com/package/@armvs/dom-inspector" target="_blank">npm</a>
+                <a class="footer-link" href="https://github.com/armvs/dom-inspector" target="_blank">github</a>
+                <a class="footer-link" href="#" onclick="return false;">docs</a>
             </span>
         </div>
 
@@ -1058,27 +1053,99 @@
                 enabled: true,
                 theme: "dark",
                 triggerKey: "Alt",
-                headerStyle: "traffic", // 'traffic' | 'classic'
+                headerStyle: "traffic",
             });
 
-            // Copy install command
-            document
-                .getElementById("copy-btn")
-                .addEventListener("click", () => {
-                    navigator.clipboard
-                        ?.writeText("npm install @armvs/dom-inspector")
-                        .then(() => {
-                            const btn = document.getElementById("copy-btn");
-                            btn.textContent = "✓";
-                            btn.style.color = "var(--green)";
-                            setTimeout(() => {
-                                btn.textContent = "⧉";
-                                btn.style.color = "";
-                            }, 1500);
-                        });
+            // ── Copy install command ──
+            document.getElementById("copy-btn").addEventListener("click", () => {
+                navigator.clipboard?.writeText("npm install @armvs/dom-inspector").then(() => {
+                    const btn = document.getElementById("copy-btn");
+                    btn.textContent = "✓";
+                    btn.style.color = "var(--green)";
+                    setTimeout(() => { btn.textContent = "⧉"; btn.style.color = ""; }, 1500);
                 });
+            });
 
-            // Mutations demo
+            // ── Event Logger ──
+            const logBody = document.getElementById("event-log-body");
+            const logEmpty = document.getElementById("log-empty-state");
+            let logCount = 0;
+
+            function addLog(type, text) {
+                logCount++;
+                if (logEmpty) logEmpty.style.display = "none";
+                const entry = document.createElement("div");
+                entry.className = "log-entry";
+                entry.innerHTML = `<span class="log-type log-${type}">${type}</span><span class="log-text">${text}</span>`;
+                logBody.insertBefore(entry, logBody.firstChild);
+                if (logBody.children.length > 20) logBody.removeChild(logBody.lastChild);
+            }
+
+            document.getElementById("log-clear-btn").addEventListener("click", () => {
+                logBody.innerHTML = '<div class="log-empty" id="log-empty-state">Waiting for events — hold Alt and hover an element…</div>';
+                logCount = 0;
+            });
+
+            // Subscribe to inspector events
+            if (typeof DOMInspector.on === 'function') {
+                DOMInspector.on('inspect', ({ selector }) => {
+                    addLog('inspect', selector || 'unknown element');
+                });
+                DOMInspector.on('copy', ({ selector }) => {
+                    addLog('copy', selector || 'selector copied');
+                });
+            }
+
+            // ── Live API Controls ──
+            document.getElementById("api-enable").addEventListener("click", () => {
+                DOMInspector.enable?.();
+                addLog('enable', 'DOMInspector.enable()');
+            });
+
+            document.getElementById("api-disable").addEventListener("click", () => {
+                DOMInspector.disable?.();
+                addLog('disable', 'DOMInspector.disable()');
+            });
+
+            document.getElementById("api-destroy").addEventListener("click", () => {
+                DOMInspector.destroy?.();
+                addLog('destroy', 'DOMInspector.destroy() — click reinit() to restore');
+            });
+
+            document.getElementById("api-reinit").addEventListener("click", () => {
+                DOMInspector.init({ enabled: true, theme: "dark", triggerKey: "Alt", headerStyle: "traffic" });
+                addLog('enable', 'DOMInspector.init() — inspector restored');
+            });
+
+            // ── Export Demo ──
+            const exportOutput = document.getElementById("export-output");
+
+            function tryExport(format) {
+                try {
+                    if (typeof DOMInspector.export === 'function') {
+                        const result = DOMInspector.export(format);
+                        if (result) {
+                            exportOutput.textContent = typeof result === 'object'
+                                ? JSON.stringify(result, null, 2)
+                                : result;
+                            addLog('audit', `export('${format}') — data captured`);
+                        } else {
+                            exportOutput.textContent = `No element inspected yet.\nHold Alt and click an element first, then export.`;
+                        }
+                    } else {
+                        exportOutput.textContent = `export('${format}') — inspect an element with Alt+click first.`;
+                    }
+                } catch (e) {
+                    exportOutput.textContent = `export('${format}') — inspect an element first (Alt+click to pin).`;
+                }
+            }
+
+            document.getElementById("export-json").addEventListener("click", () => tryExport('json'));
+            document.getElementById("export-markdown").addEventListener("click", () => tryExport('markdown'));
+            document.getElementById("export-html").addEventListener("click", () => tryExport('html'));
+            document.getElementById("export-yaml").addEventListener("click", () => tryExport('yaml'));
+
+            // ── Mutations demo ──
             const target = document.getElementById("mut-target");
             let counter = 0;
 
@@ -1092,37 +1159,27 @@
                 target.appendChild(el);
             });
 
-            document
-                .getElementById("mut-remove")
-                .addEventListener("click", () => {
-                    const last = target.querySelector("[data-mut-id]");
-                    if (last) target.removeChild(last);
-                });
+            document.getElementById("mut-remove").addEventListener("click", () => {
+                const last = target.querySelector("[data-mut-id]");
+                if (last) target.removeChild(last);
+            });
 
-            document
-                .getElementById("mut-attr")
-                .addEventListener("click", () => {
-                    target.classList.toggle("tag-green");
-                    target.style.borderColor = target.classList.contains(
-                        "tag-green",
-                    )
-                        ? "var(--green)"
-                        : "";
-                });
+            document.getElementById("mut-attr").addEventListener("click", () => {
+                target.classList.toggle("tag-green");
+                target.style.borderColor = target.classList.contains("tag-green") ? "var(--green)" : "";
+            });
 
-            document
-                .getElementById("mut-text")
-                .addEventListener("click", () => {
-                    const msgs = [
-                        "Mutation recorded — check the Mutations tab ↗",
-                        "Text changed again — each edit is logged.",
-                        "Watching for mutations…",
-                    ];
-                    const first = target.firstChild;
-                    if (first && first.nodeType === Node.TEXT_NODE) {
-                        first.textContent = msgs[counter++ % msgs.length];
-                    }
-                });
+            document.getElementById("mut-text").addEventListener("click", () => {
+                const msgs = [
+                    "Mutation recorded — check the Mutations tab ↗",
+                    "Text changed again — each edit is logged.",
+                    "Watching for mutations…",
+                ];
+                const first = target.firstChild;
+                if (first && first.nodeType === Node.TEXT_NODE) {
+                    first.textContent = msgs[counter++ % msgs.length];
+                }
+            });
         </script>
     </body>
 </html>

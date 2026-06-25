@@ -2,48 +2,21 @@
 
 Lightweight, framework-agnostic DOM Inspector inspired by browser DevTools.
 
+[![npm version](https://img.shields.io/npm/v/@armvs/dom-inspector?color=cba6f7&labelColor=1e1530)](https://www.npmjs.com/package/@armvs/dom-inspector)
+[![npm downloads](https://img.shields.io/npm/dm/@armvs/dom-inspector?color=a6e3a1&labelColor=0f1f18)](https://www.npmjs.com/package/@armvs/dom-inspector)
+[![license](https://img.shields.io/npm/l/@armvs/dom-inspector?color=89b4fa&labelColor=0f1828)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-ready-89b4fa?labelColor=0f1828)](https://www.typescriptlang.org/)
+[![Playwright](https://img.shields.io/badge/tested%20with-Playwright-f9e2af?labelColor=1e1810)](https://playwright.dev/)
+
+![DOM Inspector Demo](docs/demo.gif)
+
+---
+
+🚀 [Live Demo](https://armvs.github.io/dom-inspector/) · 📦 [npm](https://www.npmjs.com/package/@armvs/dom-inspector) · 📖 [Documentation](#api) · ⭐ [GitHub](https://github.com/armvs/dom-inspector)
+
+---
+
 Inspect elements, visualize the CSS box model, navigate the DOM tree, copy selectors, and debug layouts directly on any webpage — without opening browser DevTools.
-
-<p align="center">
-  <img width="900" src="docs/dark.png" alt="DOM Inspector Dark Theme">
-  <br><br>
-  <img width="900" src="docs/light.png" alt="DOM Inspector Light Theme">
-</p>
-
----
-
-## Why DOM Inspector?
-
-When debugging production environments, admin panels, staging deployments, embedded widgets, or client websites, opening DevTools is not always convenient.
-
-DOM Inspector provides a lightweight in-page inspection experience that can be enabled only for specific users, environments, or conditions.
-
-### Ideal Use Cases
-
-* Admin-only debugging tools
-* Internal QA environments
-* Staging deployments
-* CMS development
-* Design system validation
-* Layout troubleshooting
-* Production-safe inspection tools
-
----
-
-## Features
-
-* DevTools-inspired element inspection
-* CSS Box Model visualization
-* DOM hierarchy breadcrumbs
-* Automatic CSS selector generation
-* One-click selector copying
-* Draggable inspection panel
-* Runtime enable / disable controls
-* Framework agnostic
-* TypeScript support
-* Zero runtime dependencies
-* Unit tested with Vitest
-* End-to-end tested with Playwright
 
 ---
 
@@ -65,23 +38,6 @@ pnpm add @armvs/dom-inspector
 
 ```bash
 yarn add @armvs/dom-inspector
-```
-
----
-
-## CDN Usage
-
-```html
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/@armvs/dom-inspector/dist/inspector.min.css"
-/>
-
-<script src="https://cdn.jsdelivr.net/npm/@armvs/dom-inspector/dist/inspector.min.js"></script>
-
-<script>
-  DOMInspector.init(true);
-</script>
 ```
 
 ---
@@ -118,6 +74,133 @@ DOMInspector.init(
 
 ---
 
+## CDN Usage
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@armvs/dom-inspector/dist/inspector.min.css"
+/>
+
+<script src="https://cdn.jsdelivr.net/npm/@armvs/dom-inspector/dist/inspector.min.js"></script>
+
+<script>
+  DOMInspector.init(true);
+</script>
+```
+
+---
+
+## Highlights
+
+- 🔍 Inspect any element in real time
+- 📦 Visual CSS Box Model visualization
+- 🌳 Interactive DOM tree with breadcrumbs
+- 🎯 Automatic CSS selector & XPath generation
+- 📋 One-click selector copy
+- ♿ WCAG Accessibility auditing
+- 📐 Flexbox & Grid inspection panels
+- 🧩 Framework detection (React, Vue, Angular)
+- 🌑 Dark & Light themes (4 variants)
+- 🔭 Shadow DOM support
+- ⚡ Zero runtime dependencies
+- 🧪 Unit tested with Vitest + E2E with Playwright
+
+---
+
+## Why DOM Inspector?
+
+When debugging production environments, admin panels, staging deployments, embedded widgets, or client websites, opening DevTools is not always convenient.
+
+DOM Inspector provides a lightweight in-page inspection experience that can be enabled only for specific users, environments, or conditions.
+
+| | Chrome DevTools | DOM Inspector |
+|---|---|---|
+| Production safe | ❌ Not accessible to end users | ✅ Embeds in your app |
+| Admin-only access | ❌ Requires browser access | ✅ Condition-based init |
+| End users can use it | ❌ | ✅ |
+| Customizable trigger | ❌ | ✅ Alt / Ctrl / Meta / Shift |
+| Zero setup for users | ❌ | ✅ |
+
+### Ideal Use Cases
+
+* Admin-only debugging tools
+* Internal QA environments
+* Staging deployments
+* CMS development
+* Design system validation
+* Layout troubleshooting
+* Production-safe inspection tools
+
+---
+
+## Advanced Configuration
+
+```js
+DOMInspector.init({
+  enabled: true,
+  theme: 'dark',           // 'dark' | 'light' | { ... }
+  triggerKey: 'Alt',       // 'Alt' | 'Control' | 'Meta' | 'Shift'
+  freezeOnClick: false,
+  headerStyle: 'traffic',  // 'traffic' | 'classic'
+});
+```
+
+---
+
+## API
+
+### Initialization
+
+```js
+DOMInspector.init(true);
+
+DOMInspector.init(false);
+
+DOMInspector.init(
+  () => location.hostname === 'localhost'
+);
+```
+
+### Methods
+
+| Method | Description |
+| --- | --- |
+| `init(options)` | Initialize inspector with options or boolean |
+| `enable()` | Enable inspector at runtime |
+| `disable()` | Disable inspector at runtime |
+| `destroy()` | Remove inspector completely and clean up |
+| `export(format)` | Export inspection data — `'json'` \| `'html'` \| `'markdown'` \| `'yaml'` |
+| `audit(element)` | Run WCAG accessibility audit on element |
+| `on(event, fn)` | Subscribe to inspector events |
+
+### Events
+
+```js
+// Subscribe to events
+DOMInspector.on('inspect', ({ element, selector, xpath }) => {
+  console.log('Inspecting:', selector);
+});
+
+// Export current element data
+const data = DOMInspector.export('json'); // 'json'|'html'|'markdown'|'yaml'
+
+// Run accessibility audit
+const issues = DOMInspector.audit(document.querySelector('button'));
+```
+
+### Runtime Controls
+
+```js
+DOMInspector.enable();
+
+DOMInspector.disable();
+
+DOMInspector.destroy();
+```
+
+---
+
 ## Framework Examples
 
 ### React
@@ -130,7 +213,10 @@ import '@armvs/dom-inspector/dist/inspector.css';
 
 function App() {
   useEffect(() => {
-    DOMInspector.init(true);
+    DOMInspector.init({
+      enabled: process.env.NODE_ENV === 'development',
+      theme: 'dark',
+    });
   }, []);
 
   return <div>Application</div>;
@@ -144,7 +230,10 @@ import { onMounted } from 'vue';
 import DOMInspector from '@armvs/dom-inspector';
 
 onMounted(() => {
-  DOMInspector.init(true);
+  DOMInspector.init({
+    enabled: import.meta.env.DEV,
+    theme: 'dark',
+  });
 });
 ```
 
@@ -154,7 +243,10 @@ onMounted(() => {
 import DOMInspector from '@armvs/dom-inspector';
 
 constructor() {
-  DOMInspector.init(true);
+  DOMInspector.init({
+    enabled: !environment.production,
+    theme: 'dark',
+  });
 }
 ```
 
@@ -184,42 +276,16 @@ DOMInspector.init(
 
 ---
 
-## API
-
-### Initialization
-
-```js
-DOMInspector.init(true);
-
-DOMInspector.init(false);
-
-DOMInspector.init(
-  () => location.hostname === 'localhost'
-);
-```
-
-### Runtime Controls
-
-```js
-DOMInspector.enable();
-
-DOMInspector.disable();
-
-DOMInspector.destroy();
-```
-
----
-
 ## Keyboard Shortcuts
 
-| Shortcut    | Action          |
-| ----------- | --------------- |
+| Shortcut | Action |
+| --- | --- |
 | Alt + Hover | Inspect element |
-| Alt + Click | Pin inspector   |
-| Esc         | Close inspector |
-| Drag Header | Move panel      |
-| 📌          | Pin panel       |
-| ⧉           | Copy selector   |
+| Alt + Click | Pin inspector |
+| Esc | Close inspector |
+| Drag Header | Move panel |
+| 📌 | Pin panel |
+| ⧉ | Copy selector |
 
 ---
 
@@ -242,11 +308,11 @@ npm run test:e2e
 ## Browser Support
 
 | Browser | Supported |
-| ------- | --------- |
-| Chrome  | ✅         |
-| Firefox | ✅         |
-| Edge    | ✅         |
-| Safari  | ✅         |
+| --- | --- |
+| Chrome | ✅ |
+| Firefox | ✅ |
+| Edge | ✅ |
+| Safari | ✅ |
 
 ---
 
@@ -260,6 +326,16 @@ DOM Inspector is designed to be safe for production usage.
 * Cleans up all event listeners on `destroy()`
 * Removes injected DOM nodes completely
 * Adds no runtime overhead when disabled
+
+---
+
+## Screenshots
+
+<p align="center">
+  <img width="900" src="docs/dark.png" alt="DOM Inspector Dark Theme">
+  <br><br>
+  <img width="900" src="docs/light.png" alt="DOM Inspector Light Theme">
+</p>
 
 ---
 

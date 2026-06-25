@@ -1513,7 +1513,7 @@ td:first-child{color:#6c7086;width:40%}.sel{background:#252535;padding:6px 10px;
     chain.forEach((n, i) => {
       const s = el('span', 'insp-bc-item');
       s.textContent = n.tagName.toLowerCase() + (n.id && !n.id.startsWith(PREFIX) ? '#'+n.id : '');
-      s.addEventListener('click', (e) => { e.stopPropagation(); _pinned = n; _current = n; renderPanel(n); try { n.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' }); } catch(_) {} });
+      s.addEventListener('click', (e) => { e.stopPropagation(); _pinned = n; _current = n; renderPanel(n); });
       bc.appendChild(s);
       if (i < chain.length - 1) {
         const sep = el('span', 'insp-bc-sep'); sep.textContent = '›'; bc.appendChild(sep);
@@ -1560,7 +1560,6 @@ td:first-child{color:#6c7086;width:40%}.sel{background:#252535;padding:6px 10px;
     item.addEventListener('click', (e) => {
       e.stopPropagation();
       _pinned = n; _current = n; renderPanel(n);
-      try { n.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' }); } catch(_) {}
     });
 
     if (hasChildren && depth < maxDepth) {
@@ -1628,10 +1627,6 @@ td:first-child{color:#6c7086;width:40%}.sel{background:#252535;padding:6px 10px;
 
   // ── RENDER ──
   function renderPanel(node) {
-    // option elements have no layout (OS-rendered dropdown) — inspect parent select instead
-    if (node && node.tagName && node.tagName.toLowerCase() === 'option') {
-      node = node.closest('select') || node;
-    }
     // #9 — paintBoxOverlay uses getBoundingClientRect for correct geometry
     // (handles transform/fixed/sticky) and returns { rect, style, bo, pa }
     const { rect, style, bo, pa } = paintBoxOverlay(node);
@@ -1888,9 +1883,7 @@ td:first-child{color:#6c7086;width:40%}.sel{background:#252535;padding:6px 10px;
       }
       if (!_enabled) return;
       if (!isTriggerKey(e)) return;
-      let node = e.target;
-      // option elements have no layout in most browsers — inspect parent select instead
-      if (node && node.tagName && node.tagName.toLowerCase() === 'option') node = node.closest('select') || node;
+      const node = e.target;
       if (isInspectorNode(node)) return;
       if (_pinned) return;
 
@@ -1913,8 +1906,7 @@ td:first-child{color:#6c7086;width:40%}.sel{background:#252535;padding:6px 10px;
             renderPanel(n);
           } else if (document.getElementById(`${PREFIX}_panel`)?.style.display === 'flex') {
             // #2 — update position on hover movement
-            const posNode = (n && n.tagName && n.tagName.toLowerCase() === 'option') ? (n.closest('select') || n) : n;
-            positionPanel(posNode.getBoundingClientRect());
+            positionPanel(n.getBoundingClientRect());
           }
         });
       }, HOVER_DEBOUNCE);
@@ -1935,48 +1927,12 @@ td:first-child{color:#6c7086;width:40%}.sel{background:#252535;padding:6px 10px;
       if (!_enabled) return;
       const shouldPin = _cfg.freezeOnClick ? true : isTriggerKey(e);
       if (!shouldPin) return;
-      // Block click immediately (before browser follows links, submits forms, etc.)
-      e.preventDefault();
-      e.stopPropagation();
-      let node = e.target;
-      // option elements have no layout — inspect parent select instead
-      if (node && node.tagName && node.tagName.toLowerCase() === 'option') node = node.closest('select') || node;
+      const node = e.target;
       if (isInspectorNode(node)) return;
+      e.preventDefault();
       if (_pinned === node) { _pinned = null; closePanel(); return; }
       if (_hoverTimer) { clearTimeout(_hoverTimer); _hoverTimer = null; }
       clearTimeout(_timer);
-      _current = node; _pinned = node;
-      renderPanel(node);
-      const btn = document.getElementById(`${PREFIX}_btn_pin`);
-      if (btn) btn.style.opacity = '1';
-    }, true);
-
-    // mousedown: prevent default for ALL elements when Alt held (stops link drag, text select, etc.)
-    // For <select> specifically: pin immediately before OS dropdown opens
-    addListener(document, 'mousedown', (e) => {
-      if (!_enabled) return;
-      if (!isTriggerKey(e)) return;
-      let node = e.target;
-      if (node && node.tagName && node.tagName.toLowerCase() === 'option') node = node.closest('select') || node;
-      if (isInspectorNode(node)) return;
-      // Prevent browser default on mousedown so links don't get drag-selected, etc.
-      e.preventDefault();
-      if (node && node.tagName && node.tagName.toLowerCase() === 'select') {
-        if (_hoverTimer) { clearTimeout(_hoverTimer); _hoverTimer = null; }
-        _current = node; _pinned = node;
-        renderPanel(node);
-        const btn = document.getElementById(`${PREFIX}_btn_pin`);
-        if (btn) btn.style.opacity = '1';
-      }
-    }, true);
-
-    // select fix: after user picks an option, re-render the pinned select
-    addListener(document, 'change', (e) => {
-      if (!_enabled) return;
-      const node = e.target;
-      if (!node || node.tagName.toLowerCase() !== 'select') return;
-      if (isInspectorNode(node)) return;
-      // re-render whether pinned on this select or not
       _current = node; _pinned = node;
       renderPanel(node);
       const btn = document.getElementById(`${PREFIX}_btn_pin`);
@@ -2006,7 +1962,6 @@ td:first-child{color:#6c7086;width:40%}.sel{background:#252535;padding:6px 10px;
         renderPanel(next);
         const btn = document.getElementById(`${PREFIX}_btn_pin`);
         if (btn) btn.style.opacity = '1';
-        try { next.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' }); } catch(_) {}
       }
     });
 
@@ -2218,7 +2173,7 @@ td:first-child{color:#6c7086;width:40%}.sel{background:#252535;padding:6px 10px;
             emit('remote:message', msg);
             if (msg.type === 'inspector:select' && msg.selector) {
               const node = document.querySelector(msg.selector);
-              if (node) { _pinned = node; _current = node; renderPanel(node); try { node.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' }); } catch(_) {} }
+              if (node) { _pinned = node; _current = node; renderPanel(node); }
             }
           } catch (_) {}
         };
@@ -2251,7 +2206,7 @@ td:first-child{color:#6c7086;width:40%}.sel{background:#252535;padding:6px 10px;
         emit('collab:message', msg);
         if (msg.type === 'select' && msg.selector) {
           const node = document.querySelector(msg.selector);
-          if (node) { _pinned = node; _current = node; renderPanel(node); try { node.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' }); } catch(_) {} }
+          if (node) { _pinned = node; _current = node; renderPanel(node); }
         }
       };
       // Broadcast inspect events to collaborators (wire origEmit here when implementing relay)
@@ -2271,7 +2226,7 @@ td:first-child{color:#6c7086;width:40%}.sel{background:#252535;padding:6px 10px;
         emit('collab:message', msg);
         if (msg.type === 'select' && msg.selector) {
           const node = document.querySelector(msg.selector);
-          if (node) { _pinned = node; _current = node; renderPanel(node); try { node.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' }); } catch(_) {} }
+          if (node) { _pinned = node; _current = node; renderPanel(node); }
         }
       };
     }

@@ -1,6 +1,6 @@
 {
     "name": "@armvs/dom-inspector",
-    "version": "4.0.3",
+    "version": "4.0.4",
     "description": "Lightweight DOM inspector inspired by browser DevTools. Inspect elements, visualize box model, view selectors and debug layouts directly on any webpage.",
     "main": "dist/inspector.min.js",
     "types": "dist/inspector.d.ts",
