@@ -1,6 +1,6 @@
 /**
  * @armvs/dom-inspector — TypeScript definitions
- * Version 2.3.0
+ * Version 3.0.0
  */
 
 // ── PUBLIC INTERFACES ──────────────────────────────────────────────────────

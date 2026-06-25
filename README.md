@@ -1,46 +1,53 @@
 # @armvs/dom-inspector
 
-Lightweight DevTools-inspired DOM Inspector for any website.
+Lightweight, framework-agnostic DOM Inspector inspired by browser DevTools.
 
-Inspect elements, visualize the CSS box model, navigate the DOM tree, copy selectors and debug layouts without opening browser DevTools.
+Inspect elements, visualize the CSS box model, navigate the DOM tree, copy selectors, and debug layouts directly on any webpage — without opening browser DevTools.
 
 <p align="center">
-
-<img width="900" src="docs/demo.gif">
-
+  <img width="900" src="docs/dark.png" alt="DOM Inspector Dark Theme">
+  <br><br>
+  <img width="900" src="docs/light.png" alt="DOM Inspector Light Theme">
 </p>
+
+---
+
+## Why DOM Inspector?
+
+When debugging production environments, admin panels, staging deployments, embedded widgets, or client websites, opening DevTools is not always convenient.
+
+DOM Inspector provides a lightweight in-page inspection experience that can be enabled only for specific users, environments, or conditions.
+
+### Ideal Use Cases
+
+* Admin-only debugging tools
+* Internal QA environments
+* Staging deployments
+* CMS development
+* Design system validation
+* Layout troubleshooting
+* Production-safe inspection tools
 
 ---
 
 ## Features
 
-✅ DevTools-style element inspection
-
-✅ CSS box model visualization
-
-✅ DOM breadcrumbs navigation
-
-✅ CSS selector generation
-
-✅ One-click selector copy
-
-✅ Draggable inspector panel
-
-✅ Runtime enable / disable
-
-✅ Framework agnostic
-
-✅ TypeScript support
-
-✅ Zero dependencies
-
-✅ Vitest unit tests
-
-✅ Playwright integration tests
+* DevTools-inspired element inspection
+* CSS Box Model visualization
+* DOM hierarchy breadcrumbs
+* Automatic CSS selector generation
+* One-click selector copying
+* Draggable inspection panel
+* Runtime enable / disable controls
+* Framework agnostic
+* TypeScript support
+* Zero runtime dependencies
+* Unit tested with Vitest
+* End-to-end tested with Playwright
 
 ---
 
-# Installation
+## Installation
 
 ### npm
 
@@ -60,283 +67,215 @@ pnpm add @armvs/dom-inspector
 yarn add @armvs/dom-inspector
 ```
 
-### CDN
+---
+
+## CDN Usage
 
 ```html
-<link rel="stylesheet"
-href="https://cdn.jsdelivr.net/npm/@armvs/dom-inspector/dist/inspector.css">
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@armvs/dom-inspector/dist/inspector.min.css"
+/>
 
-<script src="https://cdn.jsdelivr.net/npm/@armvs/dom-inspector/dist/inspector.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@armvs/dom-inspector/dist/inspector.min.js"></script>
 
+<script>
+  DOMInspector.init(true);
+</script>
 ```
 
 ---
 
-# Quick Start
+## Quick Start
 
-Enable inspector permanently
+### Always Enabled
 
 ```js
 DOMInspector.init(true);
 ```
 
-Enable only for localhost
-
-```js
-DOMInspector.init(
-
-()=>location.hostname==="localhost"
-
-);
-
-```
-
-Enable only for administrators
-
-```js
-DOMInspector.init(
-
-()=>window.isAdmin===true
-
-);
-
-```
-
-Disable inspector
+### Disabled
 
 ```js
 DOMInspector.init(false);
 ```
 
+### Local Development Only
+
+```js
+DOMInspector.init(
+  () => location.hostname === 'localhost'
+);
+```
+
+### Admin Users Only
+
+```js
+DOMInspector.init(
+  () => window.isAdmin === true
+);
+```
+
 ---
 
-# Framework Examples
+## Framework Examples
 
-## React
+### React
 
 ```jsx
-
+import { useEffect } from 'react';
 import DOMInspector from '@armvs/dom-inspector';
 
 import '@armvs/dom-inspector/dist/inspector.css';
 
+function App() {
+  useEffect(() => {
+    DOMInspector.init(true);
+  }, []);
 
-
-useEffect(()=>{
-
-DOMInspector.init(true);
-
-},[]);
-
+  return <div>Application</div>;
+}
 ```
 
----
-
-## Vue
+### Vue
 
 ```js
-
+import { onMounted } from 'vue';
 import DOMInspector from '@armvs/dom-inspector';
 
-
-
-onMounted(()=>{
-
-DOMInspector.init(true);
-
+onMounted(() => {
+  DOMInspector.init(true);
 });
-
-
 ```
 
----
-
-## Angular
+### Angular
 
 ```ts
+import DOMInspector from '@armvs/dom-inspector';
 
-constructor(){
-
-
-DOMInspector.init(true);
-
-
+constructor() {
+  DOMInspector.init(true);
 }
-
-
 ```
 
----
-
-## Laravel Blade
+### Laravel
 
 ```blade
-
-
-<link rel="stylesheet"
-
-href="{{ asset('vendor/inspector/inspector.css') }}">
-
-
-
 <script src="{{ asset('vendor/inspector/inspector.js') }}"></script>
 
-
-
 <script>
-
-
 DOMInspector.init(
-
-auth()->user()?->isAdmin() ?? false
-
+    {{ auth()->user()?->isAdmin() ? 'true' : 'false' }}
 );
-
-
 </script>
-
 ```
 
----
-
-## Dynamic Laravel Mode
+### Dynamic Laravel Authorization
 
 ```blade
-
-<body
-
-data-inspector="{{ auth()->user()?->isAdmin() ? '1' : '0' }}">
-
-
+<body data-inspector="{{ auth()->user()?->isAdmin() ? '1' : '0' }}">
 
 <script>
-
-
 DOMInspector.init(
-
-()=>document.body.dataset.inspector==='1'
-
+  () => document.body.dataset.inspector === '1'
 );
-
-
 </script>
-
-
 ```
 
 ---
 
-# API
+## API
 
-## init()
+### Initialization
 
 ```js
-
 DOMInspector.init(true);
-
 
 DOMInspector.init(false);
 
-
 DOMInspector.init(
-
-()=>location.hostname==='localhost'
-
+  () => location.hostname === 'localhost'
 );
-
-
 ```
 
----
-
-## Runtime Methods
+### Runtime Controls
 
 ```js
-
-
 DOMInspector.enable();
-
 
 DOMInspector.disable();
 
-
 DOMInspector.destroy();
-
-
 ```
 
 ---
 
-# Keyboard Shortcuts
+## Keyboard Shortcuts
 
 | Shortcut    | Action          |
 | ----------- | --------------- |
 | Alt + Hover | Inspect element |
-| Alt + Click | Pin panel       |
-| Esc         | Close panel     |
+| Alt + Click | Pin inspector   |
+| Esc         | Close inspector |
 | Drag Header | Move panel      |
-| 📌          | Pin inspector   |
+| 📌          | Pin panel       |
 | ⧉           | Copy selector   |
 
 ---
 
-# Testing
+## Testing
 
-Run unit tests
+Run unit tests:
 
 ```bash
 npm test
 ```
 
-Run integration tests
+Run end-to-end tests:
 
 ```bash
-npx playwright test
+npm run test:e2e
 ```
 
 ---
 
-# Browser Support
+## Browser Support
 
-| Browser | Support |
-| ------- | ------- |
-| Chrome  | ✅       |
-| Firefox | ✅       |
-| Edge    | ✅       |
-| Safari  | ✅       |
-
----
-
-# Security
-
-Uses textContent only
-
-No innerHTML
-
-Cross-origin stylesheets ignored safely
-
-Clipboard errors handled gracefully
-
-destroy() removes all listeners and DOM nodes
-
-No overhead when disabled
+| Browser | Supported |
+| ------- | --------- |
+| Chrome  | ✅         |
+| Firefox | ✅         |
+| Edge    | ✅         |
+| Safari  | ✅         |
 
 ---
 
-# Versions
+## Security
 
-## 2.x
+DOM Inspector is designed to be safe for production usage.
 
-Standalone JavaScript library
-
-## 3.x
-
-Standalone library
-
-Browser extension support
+* Uses `textContent` instead of `innerHTML`
+* Safely ignores restricted cross-origin stylesheets
+* Handles clipboard failures gracefully
+* Cleans up all event listeners on `destroy()`
+* Removes injected DOM nodes completely
+* Adds no runtime overhead when disabled
 
 ---
 
-# License
+## Version History
 
-MIT
+### v4.x
+
+* Standalone JavaScript library
+* Browser extension support
+* Improved inspection workflow
+* Enhanced testing coverage
+
+---
+
+## License
+
+MIT License
+
+Copyright (c) Sayat

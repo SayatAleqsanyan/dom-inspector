@@ -17,7 +17,6 @@
     triggerKey:    'Alt',
     freezeOnClick: false,
     cssUrl:        null,
-    headerStyle:   'traffic', // 'traffic' | 'classic'
   };
 
   // ── STATE ──
@@ -957,32 +956,13 @@ td:first-child{color:#6c7086;width:40%}.sel{background:#252535;padding:6px 10px;
     // Header
     const header = el('div', '', { id: `${PREFIX}_header` });
     const tag    = el('span', '', { id: `${PREFIX}_tag`, text: '<div>' });
-    const btnPin   = el('button', '', { title: 'Pin  (Alt+click)', id: `${PREFIX}_btn_pin`   });
-    const btnTheme = el('button', '', { title: 'Toggle theme',     id: `${PREFIX}_btn_theme` });
-    const btnCopy  = el('button', '', { title: 'Copy selector', text: '⧉', id: `${PREFIX}_btn_copy` });
-    const btnClose = el('button', '', { title: 'Close  (Esc)',     id: `${PREFIX}_btn_close` });
-
-    if (_cfg.headerStyle === 'traffic') {
-      header.classList.add('insp-header-traffic');
-      // macOS-style traffic lights left, tag centered, copy right
-      const actsLeft  = el('div', 'insp-actions');
-      const actsRight = el('div', 'insp-actions');
-      Object.assign(btnClose.style, { width:'12px', height:'12px', borderRadius:'50%', border:'none', padding:'0', background:'#ff5f57', cursor:'pointer', flexShrink:'0', boxShadow:'inset 0 0 0 0.5px rgba(0,0,0,.25)', fontSize:'0' });
-      Object.assign(btnPin.style,   { width:'12px', height:'12px', borderRadius:'50%', border:'none', padding:'0', background:'#febc2e', cursor:'pointer', flexShrink:'0', boxShadow:'inset 0 0 0 0.5px rgba(0,0,0,.25)', fontSize:'0' });
-      Object.assign(btnTheme.style, { width:'12px', height:'12px', borderRadius:'50%', border:'none', padding:'0', background:'#28c840', cursor:'pointer', flexShrink:'0', boxShadow:'inset 0 0 0 0.5px rgba(0,0,0,.25)', fontSize:'0' });
-      [btnClose, btnPin, btnTheme].forEach(b => actsLeft.appendChild(b));
-      actsRight.appendChild(btnCopy);
-      header.append(actsLeft, tag, actsRight);
-    } else {
-      // Classic: tag left, all action buttons right
-      btnPin.textContent   = '📌';
-      btnTheme.textContent = '☀';
-      btnClose.textContent = '✕';
-      const acts = el('div', 'insp-actions');
-      [btnPin, btnTheme, btnCopy, btnClose].forEach(b => acts.appendChild(b));
-      header.append(tag, acts);
-    }
-
+    const acts   = el('div', 'insp-actions');
+    const btnPin   = el('button', '', { title: 'Pin  (Alt+click)', text: '📌', id: `${PREFIX}_btn_pin` });
+    const btnTheme = el('button', '', { title: 'Toggle theme',     text: '☀',  id: `${PREFIX}_btn_theme` });
+    const btnCopy  = el('button', '', { title: 'Copy selector',    text: '⧉',  id: `${PREFIX}_btn_copy` });
+    const btnClose = el('button', '', { title: 'Close  (Esc)',     text: '✕',  id: `${PREFIX}_btn_close` });
+    [btnPin, btnTheme, btnCopy, btnClose].forEach(b => acts.appendChild(b));
+    header.append(tag, acts);
     panel.appendChild(header);
 
     // Breadcrumb

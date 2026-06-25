@@ -31,6 +31,8 @@
           freezeOnClick: !!prefs.freeze,
           theme:         prefs.theme || 'dark',
           triggerKey:    prefs.triggerKey || 'Alt',
+          // Explicit CSS URL so inspector doesn't guess path in extension context
+          cssUrl:        chrome.runtime.getURL('inspector.css'),
         });
       }
     }).catch(console.warn);
@@ -54,10 +56,11 @@
           inspector.destroy();
           chrome.storage.sync.get(['theme','triggerKey'], (p) => {
             inspector.init({
-              enabled: true,
+              enabled:       true,
               freezeOnClick: msg.freeze,
-              theme: p.theme || 'dark',
-              triggerKey: p.triggerKey || 'Alt',
+              theme:         p.theme || 'dark',
+              triggerKey:    p.triggerKey || 'Alt',
+              cssUrl:        chrome.runtime.getURL('inspector.css'),
             });
           });
           break;
@@ -65,10 +68,11 @@
           inspector.destroy();
           chrome.storage.sync.get(['theme','freeze'], (p) => {
             inspector.init({
-              enabled: true,
+              enabled:       true,
               freezeOnClick: !!p.freeze,
-              theme: p.theme || 'dark',
-              triggerKey: msg.key,
+              theme:         p.theme || 'dark',
+              triggerKey:    msg.key,
+              cssUrl:        chrome.runtime.getURL('inspector.css'),
             });
           });
           break;

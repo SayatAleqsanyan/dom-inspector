@@ -1,10 +1,10 @@
 /* #10 — overlay layers: pointer-events none */
-.__insp_layer{position:fixed;pointer-events:none;z-index:2147483644;box-sizing:border-box;}
-.__insp_margin {background:rgba(203,166,247,.06);border:1.5px dashed rgba(203,166,247,.35);}
-.__insp_border {background:rgba(203,166,247,.08);border:2px solid rgba(203,166,247,.9);border-radius:4px;box-shadow:0 0 0 1px rgba(203,166,247,.15),inset 0 0 12px rgba(203,166,247,.05);}
-.__insp_padding{background:rgba(137,220,235,.06);border:1.5px solid rgba(137,220,235,.3);}
+.__insp_layer{position:fixed;pointer-events:none;z-index:2147483644;box-sizing:border-box;mix-blend-mode:multiply;}
+.__insp_margin {background:rgba(255,155,0,.10);border:1.5px dashed rgba(255,155,0,.7);}
+.__insp_border {background:transparent;border:1.5px solid rgba(200,160,0,.8);}
+.__insp_padding{background:rgba(100,200,100,.10);border:1.5px solid rgba(60,160,60,.7);}
 .__insp_content{background:transparent;}
-.__insp_dim{position:fixed;pointer-events:none;z-index:2147483644;background:#1e1e2e;color:#cba6f7;font-size:11px;font-family:'SF Mono','Fira Code',monospace;padding:2px 8px;border-radius:4px;white-space:nowrap;border:1px solid #45475a;box-shadow:0 2px 8px rgba(0,0,0,.4);}
+.__insp_dim{position:fixed;pointer-events:none;z-index:2147483644;background:#6b21a8;color:#fff;font-size:11px;font-family:monospace;padding:2px 6px;border-radius:3px;white-space:nowrap;}
 .__insp_tooltip{position:fixed;pointer-events:none;z-index:2147483647;font-family:monospace;font-size:11px;background:#11111b;color:#cdd6f4;border:1px solid #45475a;border-radius:4px;padding:3px 8px;display:none;white-space:nowrap;}
 
 /* ── PANEL ── */
@@ -26,34 +26,13 @@
 #__insp_panel.insp-light{background:#fff;border:1px solid #d0cfe8;color:#2d2b45;}
 
 /* ── HEADER ── */
-#__insp_header{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;cursor:grab;border-bottom:1px solid;flex-shrink:0;position:relative;}
+#__insp_header{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;cursor:grab;border-bottom:1px solid;flex-shrink:0;}
 #__insp_header:active{cursor:grabbing;}
 .insp-dark  #__insp_header{background:#313244;border-color:#45475a;}
 .insp-light #__insp_header{background:#f0eeff;border-color:#d0cfe8;}
-#__insp_tag{font-size:13px;font-weight:600;}
+#__insp_tag{font-size:14px;font-weight:600;}
 .insp-dark  #__insp_tag{color:#cba6f7;}
 .insp-light #__insp_tag{color:#6d28d9;}
-/* Traffic mode: tag absolutely centered */
-#__insp_header.insp-header-traffic #__insp_tag{position:absolute;left:50%;transform:translateX(-50%);}
-
-/* ── HEADER BUTTONS ── */
-.insp-actions{display:flex;align-items:center;gap:6px;}
-/* Traffic mode: circular colored dots */
-.insp-header-traffic .insp-actions button{width:12px;height:12px;border-radius:50%;border:none;cursor:pointer;padding:0;font-size:0;transition:filter .15s;flex-shrink:0;line-height:1;}
-.insp-header-traffic .insp-actions button:hover{filter:brightness(1.2);}
-/* Copy button: same icon style in both modes */
-button#__insp_btn_copy{background:none !important;border:none !important;cursor:pointer;font-size:14px !important;padding:3px 5px !important;border-radius:4px !important;width:auto !important;height:auto !important;transition:background .12s !important;line-height:1;}
-.insp-dark  button#__insp_btn_copy{color:#6c7086 !important;}
-.insp-light button#__insp_btn_copy{color:#9ca3af !important;}
-.insp-dark  button#__insp_btn_copy:hover{background:#45475a !important;color:#cdd6f4 !important;filter:none;}
-.insp-light button#__insp_btn_copy:hover{background:#e0deff !important;color:#3b1fa8 !important;filter:none;}
-/* Classic mode: icon buttons */
-#__insp_header:not(.insp-header-traffic) .insp-actions button{background:none;border:none;cursor:pointer;font-size:14px;padding:3px 5px;border-radius:4px;transition:background .12s;line-height:1;}
-.insp-dark  #__insp_header:not(.insp-header-traffic) .insp-actions button{color:#6c7086;}
-.insp-light #__insp_header:not(.insp-header-traffic) .insp-actions button{color:#9ca3af;}
-.insp-dark  #__insp_header:not(.insp-header-traffic) .insp-actions button:hover{background:#45475a;color:#cdd6f4;}
-.insp-light #__insp_header:not(.insp-header-traffic) .insp-actions button:hover{background:#e0deff;color:#3b1fa8;}
-
 
 /* ── BREADCRUMB ── */
 #__insp_breadcrumb{font-size:11px;padding:5px 12px;border-bottom:1px solid;display:flex;align-items:center;flex-wrap:wrap;gap:4px;flex-shrink:0;}
@@ -215,11 +194,13 @@ button#__insp_btn_copy{background:none !important;border:none !important;cursor:
 .insp-dark  .insp-vv{color:#89dceb;text-align:right;word-break:break-all;}
 .insp-light .insp-vv{color:#0891b2;text-align:right;word-break:break-all;}
 
-/* ── ACTIONS (copy btn only — traffic lights handled above) ── */
-.insp-dark  #__insp_btn_copy{border-color:#45475a !important;color:#6c7086 !important;}
-.insp-dark  #__insp_btn_copy:hover{border-color:#cba6f7 !important;color:#cba6f7 !important;}
-.insp-light #__insp_btn_copy{border-color:#d0cfe8 !important;color:#9ca3af !important;}
-.insp-light #__insp_btn_copy:hover{border-color:#6d28d9 !important;color:#6d28d9 !important;}
+/* ── ACTIONS ── */
+.insp-actions{display:flex;gap:6px;align-items:center;}
+.insp-actions button{background:none;border:none;cursor:pointer;font-size:14px;padding:3px 5px;border-radius:4px;transition:background .12s;line-height:1;}
+.insp-dark  .insp-actions button{color:#6c7086;}
+.insp-light .insp-actions button{color:#9ca3af;}
+.insp-dark  .insp-actions button:hover{background:#45475a;color:#cdd6f4;}
+.insp-light .insp-actions button:hover{background:#e0deff;color:#3b1fa8;}
 
 /* ── HINT BAR ── */
 #__insp_hint{font-size:10px;text-align:center;padding:4px 0;letter-spacing:.04em;border-top:1px solid;flex-shrink:0;}

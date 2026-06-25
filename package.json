@@ -1,14 +1,18 @@
 {
     "name": "@armvs/dom-inspector",
-    "version": "3.0.0",
+    "version": "4.0.0",
     "description": "Lightweight DOM inspector inspired by browser DevTools. Inspect elements, visualize box model, view selectors and debug layouts directly on any webpage.",
-    "main": "dist/inspector.js",
+    "main": "dist/inspector.min.js",
     "types": "dist/inspector.d.ts",
-    "style": "dist/inspector.css",
+    "style": "dist/inspector.min.css",
     "scripts": {
         "test": "vitest run",
         "test:watch": "vitest",
-        "test:coverage": "vitest run --coverage"
+        "test:coverage": "vitest run --coverage",
+        "build": "node scripts/build.js",
+        "prepublishOnly": "npm run build",
+        "test:e2e": "playwright test",
+        "test:e2e:ui": "playwright test --ui"
     },
     "keywords": [
         "dom",
@@ -26,13 +30,32 @@
     "type": "commonjs",
     "files": [
         "README.md",
-        "dist/"
+        "dist/",
+        "scripts/"
     ],
     "devDependencies": {
-        "vitest": "^1.6.0",
+        "@playwright/test": "^1.44.0",
         "@vitest/coverage-v8": "^1.6.0",
         "jsdom": "^24.0.0",
-        "@playwright/test": "^1.44.0"
+        "terser": "^5.48.0",
+        "vitest": "^1.6.0"
     },
-    "dependencies": {}
+    "exports": {
+        ".": {
+            "import": "./dist/inspector.esm.js",
+            "require": "./dist/inspector.min.js",
+            "default": "./dist/inspector.min.js"
+        },
+        "./css": "./dist/inspector.min.css",
+        "./src": "./dist/inspector.js"
+    },
+    "module": "dist/inspector.esm.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/armvs/dom-inspector.git"
+    },
+    "bugs": {
+        "url": "https://github.com/armvs/dom-inspector/issues"
+    },
+    "homepage": "https://github.com/armvs/dom-inspector#readme"
 }
