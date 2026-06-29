@@ -1,61 +1,73 @@
 {
-    "name": "@armvs/dom-inspector",
-    "version": "4.0.4",
-    "description": "Lightweight DOM inspector inspired by browser DevTools. Inspect elements, visualize box model, view selectors and debug layouts directly on any webpage.",
-    "main": "dist/inspector.min.js",
-    "types": "dist/inspector.d.ts",
-    "style": "dist/inspector.min.css",
-    "scripts": {
-        "test": "vitest run",
-        "test:watch": "vitest",
-        "test:coverage": "vitest run --coverage",
-        "build": "node scripts/build.js",
-        "prepublishOnly": "npm run build",
-        "test:e2e": "playwright test",
-        "test:e2e:ui": "playwright test --ui"
+  "name": "@armvs/dom-inspector",
+  "version": "5.0.0",
+  "description": "Lightweight DOM inspector inspired by browser DevTools. Inspect elements, visualize box model, view selectors and debug layouts directly on any webpage.",
+  "main": "./dist/inspector.cjs",
+  "types": "./dist/inspector.d.ts",
+  "style": "./dist/inspector.min.css",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "build": "node scripts/build.cjs",
+    "prepublishOnly": "npm run build",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
+  },
+  "keywords": [
+    "dom",
+    "inspector",
+    "devtools",
+    "debug",
+    "layout",
+    "css",
+    "selector",
+    "html",
+    "developer-tools"
+  ],
+  "author": "Sayat",
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "README.md",
+    "dist/inspector.mjs",
+    "dist/inspector.mjs.map",
+    "dist/inspector.cjs",
+    "dist/inspector.cjs.map",
+    "dist/inspector.umd.js",
+    "dist/inspector.min.js",
+    "dist/inspector.min.css",
+    "dist/inspector.css",
+    "dist/inspector.d.ts"
+  ],
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-terser": "^0.4.0",
+    "@vitest/coverage-v8": "^1.6.0",
+    "jsdom": "^24.0.0",
+    "rollup": "^4.0.0",
+    "rollup-plugin-postcss": "^4.0.2",
+    "terser": "^5.48.0",
+    "vitest": "^1.6.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/inspector.d.ts",
+      "import": "./dist/inspector.mjs",
+      "require": "./dist/inspector.cjs",
+      "default": "./dist/inspector.cjs"
     },
-    "keywords": [
-        "dom",
-        "inspector",
-        "devtools",
-        "debug",
-        "layout",
-        "css",
-        "selector",
-        "html",
-        "developer-tools"
-    ],
-    "author": "Sayat",
-    "license": "MIT",
-    "type": "commonjs",
-    "files": [
-        "README.md",
-        "dist/",
-        "scripts/"
-    ],
-    "devDependencies": {
-        "@playwright/test": "^1.44.0",
-        "@vitest/coverage-v8": "^1.6.0",
-        "jsdom": "^24.0.0",
-        "terser": "^5.48.0",
-        "vitest": "^1.6.0"
-    },
-    "exports": {
-        ".": {
-            "import": "./dist/inspector.esm.js",
-            "require": "./dist/inspector.min.js",
-            "default": "./dist/inspector.min.js"
-        },
-        "./css": "./dist/inspector.min.css",
-        "./src": "./dist/inspector.js"
-    },
-    "module": "dist/inspector.esm.js",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/SayatAleqsanyan/dom-inspector.git"
-    },
-    "homepage": "https://github.com/SayatAleqsanyan/dom-inspector#readme",
-    "bugs": {
-        "url": "https://github.com/SayatAleqsanyan/dom-inspector/issues"
-    }
+    "./css": "./dist/inspector.min.css",
+    "./package.json": "./package.json"
+  },
+  "module": "./dist/inspector.mjs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SayatAleqsanyan/dom-inspector.git"
+  },
+  "homepage": "https://github.com/SayatAleqsanyan/dom-inspector#readme",
+  "bugs": {
+    "url": "https://github.com/SayatAleqsanyan/dom-inspector/issues"
+  }
 }

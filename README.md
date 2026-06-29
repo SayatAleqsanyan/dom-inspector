@@ -42,6 +42,66 @@ yarn add @armvs/dom-inspector
 
 ---
 
+## Usage
+
+### ES Module (Vite / Nuxt / Rollup / Webpack 5)
+
+```js
+import DOMInspector from '@armvs/dom-inspector';
+import '@armvs/dom-inspector/css';
+
+DOMInspector.init(true);
+```
+
+### Named imports (tree-shakeable)
+
+```js
+import { init, enable, disable, destroy } from '@armvs/dom-inspector';
+import '@armvs/dom-inspector/css';
+
+init(true);
+```
+
+### CommonJS (Node.js / require)
+
+```js
+const DOMInspector = require('@armvs/dom-inspector');
+
+DOMInspector.init(true);
+```
+
+### TypeScript
+
+```ts
+import DOMInspector, { InspectorOptions, ExportData } from '@armvs/dom-inspector';
+import '@armvs/dom-inspector/css';
+
+const options: InspectorOptions = {
+  triggerKey:    'Alt',
+  freezeOnClick: false,
+  theme:         'dark',
+};
+
+DOMInspector.init(options);
+```
+
+> TypeScript support is built-in — no `@types/` package needed.
+> IntelliSense works automatically in VSCode and any TypeScript-aware editor.
+
+### CSS import
+
+Import the stylesheet separately so your bundler can process or tree-shake it:
+
+```js
+// In JS / TS entry point
+import '@armvs/dom-inspector/css';
+
+// Or in a CSS / SCSS file
+@import '@armvs/dom-inspector/dist/inspector.min.css';
+```
+
+---
+
 ## Quick Start
 
 ### Always Enabled

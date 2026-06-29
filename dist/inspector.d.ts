@@ -261,12 +261,45 @@ export interface FrameworkInfo {
   version?: number | string;
 }
 
-// ── MODULE EXPORT ──────────────────────────────────────────────────────────
+// ── MODULE EXPORTS ─────────────────────────────────────────────────────────
 
+/**
+ * The singleton DOMInspector instance.
+ *
+ * @example
+ * // ES Module (Vite / Nuxt / Rollup / Webpack 5)
+ * import DOMInspector from '@armvs/dom-inspector';
+ * import '@armvs/dom-inspector/css';
+ * DOMInspector.init();
+ *
+ * // Named imports (tree-shakeable)
+ * import { init, enable, disable } from '@armvs/dom-inspector';
+ *
+ * // CommonJS (Node.js)
+ * const DOMInspector = require('@armvs/dom-inspector');
+ *
+ * // TypeScript
+ * import DOMInspector, { InspectorOptions } from '@armvs/dom-inspector';
+ */
 declare const DOMInspector: InspectorInstance;
 
 export default DOMInspector;
 export { DOMInspector };
 
-// Allow `import DOMInspector from '@armvs/dom-inspector'`
-// and `const { init } = DOMInspector`
+// Named re-exports — enable tree-shaking and destructured imports
+export declare const init:                   InspectorInstance['init'];
+export declare const enable:                 InspectorInstance['enable'];
+export declare const disable:                InspectorInstance['disable'];
+export declare const destroy:                InspectorInstance['destroy'];
+export declare const on:                     InspectorInstance['on'];
+export declare const off:                    InspectorInstance['off'];
+export declare const generateStableSelector: InspectorInstance['generateStableSelector'];
+export declare const setTheme:               InspectorInstance['setTheme'];
+export declare const patchAddEventListener:  InspectorInstance['patchAddEventListener'];
+export declare const clearMutations:         InspectorInstance['clearMutations'];
+export declare const detectFramework:        InspectorInstance['detectFramework'];
+export declare const audit:                  InspectorInstance['audit'];
+export declare const connect:                InspectorInstance['connect'];
+export declare const disconnect:             InspectorInstance['disconnect'];
+export declare const share:                  InspectorInstance['share'];
+export declare const joinSession:            InspectorInstance['joinSession'];
