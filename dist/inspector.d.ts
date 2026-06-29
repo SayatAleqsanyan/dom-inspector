@@ -41,6 +41,14 @@ export interface InspectorOptions {
    * @default 'dark'
    */
   theme?: 'dark' | 'light' | CustomTheme;
+
+  /**
+   * Style of the inspector panel header.
+   * - `'traffic'` — macOS-style traffic-light close/pin buttons (default)
+   * - `'classic'` — simple text-based header
+   * @default 'traffic'
+   */
+  headerStyle?: 'traffic' | 'classic';
 }
 
 /**

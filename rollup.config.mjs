@@ -1,19 +1,19 @@
 /**
  * rollup.config.mjs — @armvs/dom-inspector build pipeline
  *
- * Outputs (all built directly from src/index.js — no bundle derives from another bundle):
- *   dist/inspector.mjs       — Native ES Module  (Vite, Nuxt, Rollup, tree-shakeable)
- *   dist/inspector.cjs       — CommonJS          (Node.js require())
- *   dist/inspector.umd.js    — UMD               (browser <script>, AMD, CJS fallback)
- *   dist/inspector.min.js    — Minified UMD      (CDN / <script src="">)
- *   dist/inspector.css       — Stylesheet
- *   dist/inspector.mjs.map   — ESM source map
- *   dist/inspector.cjs.map   — CJS source map
+ * CSS strategy:
+ *   - ESM / CJS builds: CSS is inlined as a data-URI so import '@armvs/dom-inspector'
+ *     works out-of-the-box in Vite/Nuxt without needing cssUrl or a separate <link>.
+ *     Users can still override via init({ cssUrl: '...' }).
+ *   - UMD / CDN builds: same inline approach — no external file dependency.
+ *   - dist/inspector.css + dist/inspector.min.css are still shipped for users who
+ *     prefer to import the stylesheet manually.
  */
 
 import { nodeResolve } from '@rollup/plugin-node-resolve';
-import terser            from '@rollup/plugin-terser';
-import { readFileSync }  from 'fs';
+import replace          from '@rollup/plugin-replace';
+import terser           from '@rollup/plugin-terser';
+import { readFileSync } from 'fs';
 
 const pkg  = JSON.parse(readFileSync('./package.json', 'utf8'));
 const year = new Date().getFullYear();
@@ -24,78 +24,65 @@ const banner = `/*!
  * Released under the MIT License
  */`;
 
-/** Terser options shared across minified builds */
+// Inline the minified CSS as a data-URI so the bundle is self-contained.
+// injectCSS() in the source already checks __INSP_CSS_URL__ before falling
+// back to the relative-path heuristic — we just fill that slot at build time.
+function cssDataUri() {
+  let css = readFileSync('./dist/inspector.css', 'utf8');
+  // Minify
+  css = css
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\s*([{}:;,>~+])\s*/g, '$1')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/;}/g, '}')
+    .trim();
+  const b64 = Buffer.from(css).toString('base64');
+  return `"data:text/css;base64,${b64}"`;
+}
+
+const inlineCSSPlugin = () =>
+  replace({
+    preventAssignment: true,
+    values: {
+      // Replace the runtime __INSP_CSS_URL__ check with the actual data-URI
+      '__INSP_CSS_URL__': cssDataUri(),
+    },
+  });
+
 const terserOptions = {
-  compress: {
-    passes:       2,
-    drop_console: false,
-    pure_getters: true,
-  },
-  mangle:  true,
-  format:  { comments: false },
+  compress: { passes: 2, pure_getters: true },
+  mangle:   true,
+  format:   { comments: false },
 };
 
-/** Common Rollup plugins (non-minified) */
-const basePlugins = [nodeResolve()];
+const basePlugins = [nodeResolve(), inlineCSSPlugin()];
 
 export default [
-  // ── 1. ES Module (inspector.mjs) ────────────────────────────────────────────
-  // Native import/export, tree-shakeable, used by Vite / Nuxt / Rollup
+  // 1. ES Module — Vite / Nuxt / Rollup / tree-shakeable
   {
     input:  'src/index.js',
-    output: {
-      file:      'dist/inspector.mjs',
-      format:    'es',
-      banner,
-      sourcemap: true,
-    },
+    output: { file: 'dist/inspector.mjs', format: 'es', banner, sourcemap: true },
     plugins: basePlugins,
   },
 
-  // ── 2. CommonJS (inspector.cjs) ─────────────────────────────────────────────
-  // Used by Node.js require() and older bundlers
+  // 2. CommonJS — Node.js require()
   {
     input:  'src/index.js',
-    output: {
-      file:      'dist/inspector.cjs',
-      format:    'cjs',
-      exports:   'named',
-      banner,
-      sourcemap: true,
-    },
+    output: { file: 'dist/inspector.cjs', format: 'cjs', exports: 'named', banner, sourcemap: true },
     plugins: basePlugins,
   },
 
-  // ── 3. UMD — unminified (inspector.umd.js) ──────────────────────────────────
-  // Useful for debugging; referenced as fallback by some CDNs
+  // 3. UMD unminified — debug / fallback
   {
     input:  'src/index.js',
-    output: {
-      file:       'dist/inspector.umd.js',
-      format:     'umd',
-      name:       'DOMInspector',
-      exports:    'named',
-      banner,
-      sourcemap:  false,
-    },
+    output: { file: 'dist/inspector.umd.js', format: 'umd', name: 'DOMInspector', exports: 'named', banner },
     plugins: basePlugins,
   },
 
-  // ── 4. UMD — minified (inspector.min.js) ────────────────────────────────────
-  // CDN / <script src=""> build, exposes window.DOMInspector
+  // 4. UMD minified — CDN / <script src="">
   {
     input:  'src/index.js',
-    output: {
-      file:      'dist/inspector.min.js',
-      format:    'umd',
-      name:      'DOMInspector',
-      exports:   'named',
-      banner,
-      sourcemap: false,
-    },
-    plugins: [
-      nodeResolve(),
-      terser(terserOptions),
-    ],
+    output: { file: 'dist/inspector.min.js', format: 'umd', name: 'DOMInspector', exports: 'named', banner },
+    plugins: [nodeResolve(), inlineCSSPlugin(), terser(terserOptions)],
   },
 ];
